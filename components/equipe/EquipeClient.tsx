@@ -1,0 +1,151 @@
+'use client'
+
+import { useState } from 'react'
+import { formatDate } from '@/lib/utils'
+
+interface Membre {
+  id: string
+  email: string
+  prenom?: string
+  nom?: string
+  role: string
+  created_at: string
+}
+
+export default function EquipeClient({ membres: initial, orgNom }: { membres: Membre[], orgNom: string }) {
+  const [membres, setMembres] = useState(initial)
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [showForm, setShowForm] = useState(false)
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    const res = await fetch('/api/equipe/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || 'Erreur lors de l\'invitation')
+    } else {
+      setSuccess(`Invitation envoyée à ${email}`)
+      setEmail('')
+      setShowForm(false)
+      // Ajoute le membre optimistiquement
+      setMembres(prev => [...prev, {
+        id: Math.random().toString(),
+        email,
+        role: 'membre',
+        created_at: new Date().toISOString(),
+      }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Équipe</h1>
+          <p className="text-gray-500 text-sm">{orgNom} · {membres.length} membre(s)</p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Inviter un collaborateur
+        </button>
+      </div>
+
+      {/* Formulaire invitation */}
+      {showForm && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 animate-slide-up">
+          <h2 className="font-semibold text-gray-900 mb-1">Inviter par email</h2>
+          <p className="text-sm text-gray-500 mb-4">Un email d'invitation sera envoyé. Le collaborateur devra définir son mot de passe.</p>
+          <form onSubmit={handleInvite} className="flex gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="collaborateur@entreprise.fr"
+              className="input-base flex-1"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex-shrink-0"
+            >
+              {loading ? '…' : 'Envoyer'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium flex-shrink-0"
+            >
+              Annuler
+            </button>
+          </form>
+          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-6 text-sm text-emerald-700 flex items-center gap-2">
+          <span>✓</span> {success}
+        </div>
+      )}
+
+      {/* Table membres */}
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Membre</th>
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Email</th>
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Rôle</th>
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Depuis</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {membres.map(membre => (
+              <tr key={membre.id} className="hover:bg-gray-50">
+                <td className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
+                      {(membre.prenom?.[0] || membre.email?.[0] || '?').toUpperCase()}
+                    </div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {membre.prenom || membre.nom
+                        ? `${membre.prenom || ''} ${membre.nom || ''}`.trim()
+                        : <span className="text-gray-400 italic">En attente</span>}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-600">{membre.email || '—'}</td>
+                <td className="px-5 py-4">
+                  <span className={`badge ${membre.role === 'admin' ? 'text-purple-600 bg-purple-50 border-purple-200' : 'text-gray-600 bg-gray-100 border-gray-200'}`}>
+                    {membre.role}
+                  </span>
+                </td>
+                <td className="px-5 py-4 text-sm text-gray-500">{formatDate(membre.created_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  )
+}
