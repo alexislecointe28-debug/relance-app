@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import TimerWrapper from '@/components/ui/TimerWrapper'
 import './globals.css'
 import TimerWrapper from '@/components/ui/TimerWrapper'
 
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={inter.variable}>
       <body className="bg-gray-50 text-gray-900 antialiased">
         {children}
-        <div style={{position:"fixed",bottom:"24px",right:"24px",width:"48px",height:"48px",background:"red",borderRadius:"50%",zIndex:9999}} />
+        <TimerWrapper />
       </body>
     </html>
   )
