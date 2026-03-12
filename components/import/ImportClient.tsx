@@ -1,0 +1,208 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { detectSeparator, detectColumns, parseAmount, formatMontant } from '@/lib/utils'
+
+type Mode = 'csv' | 'pdf' | 'manual'
+
+interface ParsedFacture {
+  societe: string; numero: string; montant_ttc: number
+  date_facture: string; date_echeance: string; bon_commande: string
+  confidence?: 'high' | 'medium' | 'low'; _selected?: boolean
+}
+
+export default function ImportClient() {
+  const [mode, setMode] = useState<Mode>('csv')
+  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'success'>('upload')
+  const [parsed, setParsed] = useState<ParsedFacture[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [rawCsv, setRawCsv] = useState<string[][]>([])
+  const [headers, setHeaders] = useState<string[]>([])
+  const [mapping, setMapping] = useState<Record<string, number>>({})
+  const [manual, setManual] = useState<ParsedFacture>({ societe: '', numero: '', montant_ttc: 0, date_facture: '', date_echeance: '', bon_commande: '' })
+  const router = useRouter()
+
+  function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string
+      const sep = detectSeparator(text)
+      const rows = text.split('\n').map(r => r.split(sep).map(c => c.trim().replace(/^"|"$/g, '')))
+      const h = rows[0] || []
+      setHeaders(h); setRawCsv(rows.slice(1).filter(r => r.some(c => c))); setMapping(detectColumns(h)); setStep('map')
+    }
+    reader.readAsText(file, 'UTF-8')
+  }
+
+  function applyMapping() {
+    const rows: ParsedFacture[] = rawCsv.map(row => ({
+      societe: mapping.societe !== undefined ? row[mapping.societe] || '' : '',
+      numero: mapping.numero !== undefined ? row[mapping.numero] || '' : '',
+      montant_ttc: mapping.montant_ttc !== undefined ? parseAmount(row[mapping.montant_ttc] || '0') : 0,
+      date_facture: mapping.date_facture !== undefined ? row[mapping.date_facture] || '' : '',
+      date_echeance: mapping.date_echeance !== undefined ? row[mapping.date_echeance] || '' : '',
+      bon_commande: mapping.bon_commande !== undefined ? row[mapping.bon_commande] || '' : '',
+      _selected: true,
+    }))
+    setParsed(rows); setStep('preview')
+  }
+
+  async function handleImport() {
+    const toImport = parsed.filter(f => f._selected)
+    if (!toImport.length) return
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/dossiers/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ factures: toImport }) })
+      if (!res.ok) throw new Error(await res.text())
+      setStep('success')
+    } catch (err: any) { setError(err.message || "Erreur lors de l'import.") }
+    setLoading(false)
+  }
+
+  const FIELDS = [
+    { key: 'societe', label: 'Société' }, { key: 'numero', label: 'N° Facture' },
+    { key: 'montant_ttc', label: 'Montant TTC' }, { key: 'date_facture', label: 'Date facture' },
+    { key: 'date_echeance', label: 'Échéance' }, { key: 'bon_commande', label: 'Bon de commande' },
+  ] as const
+
+  return (
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Importer des factures</h1>
+        <p className="text-gray-500 text-sm">Importez depuis un fichier CSV, PDF ou saisissez manuellement.</p>
+      </div>
+
+      {step === 'success' ? (
+        <div className="bg-white border border-emerald-200 rounded-2xl p-12 text-center animate-fade-in shadow-sm">
+          <div className="text-5xl mb-4">✅</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Import réussi !</h2>
+          <p className="text-gray-500 mb-6">{parsed.filter(f => f._selected).length} facture(s) importée(s)</p>
+          <button onClick={() => router.push('/dashboard')} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">Voir le tableau de bord</button>
+        </div>
+      ) : (
+        <>
+          {step === 'upload' && (
+            <div className="flex gap-2 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
+              {(['csv', 'pdf', 'manual'] as Mode[]).map(m => (
+                <button key={m} onClick={() => setMode(m)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>
+                  {m === 'csv' ? '📊 CSV' : m === 'pdf' ? '📄 PDF' : '✏️ Manuel'}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === 'upload' && mode === 'csv' && <UploadZone accept=".csv,.tsv,.txt" label="Glissez votre fichier CSV ici" sub="Séparateur auto-détecté (; , tab)" onChange={handleCsvUpload} />}
+
+          {step === 'upload' && mode === 'manual' && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-4">Saisie manuelle</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {FIELDS.map(f => (
+                  <div key={f.key}>
+                    <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">{f.label}</label>
+                    <input type={f.key.includes('date') ? 'date' : f.key === 'montant_ttc' ? 'number' : 'text'}
+                      value={manual[f.key] as string}
+                      onChange={e => setManual(prev => ({ ...prev, [f.key]: f.key === 'montant_ttc' ? parseFloat(e.target.value) : e.target.value }))}
+                      className="input-base" step={f.key === 'montant_ttc' ? '0.01' : undefined} />
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => { setParsed([{ ...manual, _selected: true }]); setStep('preview') }}
+                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
+                Continuer
+              </button>
+            </div>
+          )}
+
+          {step === 'map' && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5 shadow-sm animate-slide-up">
+              <h2 className="font-semibold text-gray-900">Correspondance des colonnes</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {FIELDS.map(f => (
+                  <div key={f.key}>
+                    <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">{f.label}</label>
+                    <select value={mapping[f.key] !== undefined ? mapping[f.key] : ''} onChange={e => setMapping(prev => ({ ...prev, [f.key]: e.target.value !== '' ? parseInt(e.target.value) : undefined as any }))} className="input-base">
+                      <option value="">— Ignorer —</option>
+                      {headers.map((h, i) => <option key={i} value={i}>{h}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              <div className="border border-gray-200 rounded-xl overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-gray-100 bg-gray-50">{headers.map((h, i) => <th key={i} className="px-3 py-2 text-left text-gray-500 font-medium">{h}</th>)}</tr></thead>
+                  <tbody>{rawCsv.slice(0, 3).map((row, i) => <tr key={i} className="border-b border-gray-50">{row.map((cell, j) => <td key={j} className="px-3 py-2 text-gray-700">{cell}</td>)}</tr>)}</tbody>
+                </table>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setStep('upload')} className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">← Retour</button>
+                <button onClick={applyMapping} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">Prévisualiser ({rawCsv.length} lignes)</button>
+              </div>
+            </div>
+          )}
+
+          {step === 'preview' && (
+            <div className="space-y-4 animate-slide-up">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900">{parsed.filter(f => f._selected).length} facture(s) à importer</h2>
+                <div className="flex gap-3">
+                  <button onClick={() => setStep(mode === 'csv' ? 'map' : 'upload')} className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">← Retour</button>
+                  <button onClick={handleImport} disabled={loading || !parsed.some(f => f._selected)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium disabled:opacity-50">
+                    {loading ? 'Import en cours…' : 'Importer'}
+                  </button>
+                </div>
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="px-4 py-3 text-left w-8"><input type="checkbox" checked={parsed.every(f => f._selected)} onChange={e => setParsed(prev => prev.map(f => ({ ...f, _selected: e.target.checked })))} className="accent-blue-600" /></th>
+                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Société</th>
+                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">N° Facture</th>
+                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Montant TTC</th>
+                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Échéance</th>
+                      <th className="px-4 py-3 w-8"/>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {parsed.map((row, i) => (
+                      <tr key={i} className={!row._selected ? 'opacity-40' : ''}>
+                        <td className="px-4 py-3"><input type="checkbox" checked={row._selected} onChange={e => setParsed(prev => prev.map((r, j) => j === i ? { ...r, _selected: e.target.checked } : r))} className="accent-blue-600" /></td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{row.societe || <span className="text-red-500">⚠ manquant</span>}</td>
+                        <td className="px-4 py-3 text-gray-500">{row.numero}</td>
+                        <td className="px-4 py-3 font-mono text-gray-900">{formatMontant(row.montant_ttc)}</td>
+                        <td className="px-4 py-3 text-gray-500">{row.date_echeance}</td>
+                        <td className="px-4 py-3"><button onClick={() => setParsed(prev => prev.filter((_, j) => j !== i))} className="text-xs text-red-400 hover:text-red-600">✕</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </main>
+  )
+}
+
+function UploadZone({ accept, label, sub, onChange, loading }: { accept: string; label: string; sub: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; loading?: boolean }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [dragOver, setDragOver] = useState(false)
+  return (
+    <div onClick={() => inputRef.current?.click()} onDragOver={e => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)}
+      onDrop={e => { e.preventDefault(); setDragOver(false); const file = e.dataTransfer.files[0]; if (file && inputRef.current) { const dt = new DataTransfer(); dt.items.add(file); inputRef.current.files = dt.files; onChange({ target: inputRef.current } as any) } }}
+      className={`border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-all ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'}`}>
+      <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={onChange} />
+      <div className="text-4xl mb-4">{loading ? '⏳' : '📂'}</div>
+      <div className="font-medium text-gray-700">{loading ? 'Extraction en cours…' : label}</div>
+      <div className="text-sm text-gray-400 mt-1">{sub}</div>
+    </div>
+  )
+}

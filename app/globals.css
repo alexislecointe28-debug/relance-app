@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: #F5F6FA;
+  color: #0F1117;
+  font-family: var(--font-dm-sans);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* Focus */
+:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }
+
+button, a, select, input, textarea { transition: all 0.15s ease; }
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stat-value { animation: countUp 0.4s ease-out; }
+
+@keyframes progressGrow { from { width: 0%; } }
+.progress-bar { animation: progressGrow 0.8s ease-out; }
+
+.card-hover { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.card-hover:hover {
+  border-color: #BFDBFE;
+  box-shadow: 0 0 0 1px #DBEAFE, 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+.modal-backdrop { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(209, 213, 219, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(209, 213, 219, 0.4) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: -8px;
+  width: 1px;
+  background: linear-gradient(to bottom, #E5E7EB, transparent);
+}
+
+.input-base {
+  @apply bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 w-full;
+  @apply focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100;
+}
+
+.select-base {
+  @apply bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 w-full appearance-none cursor-pointer;
+  @apply focus:outline-none focus:border-blue-400;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border;
+}
+
+.montant-display {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

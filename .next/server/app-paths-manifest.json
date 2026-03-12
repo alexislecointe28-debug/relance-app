@@ -1,0 +1,8 @@
+{
+  "/agenda/page": "app/agenda/page.js",
+  "/equipe/page": "app/equipe/page.js",
+  "/dossiers/[id]/page": "app/dossiers/[id]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/qualifier/page": "app/qualifier/page.js",
+  "/parametres/page": "app/parametres/page.js"
+}
