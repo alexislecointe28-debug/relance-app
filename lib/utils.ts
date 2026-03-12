@@ -81,7 +81,7 @@ export function detectSeparator(csv: string): string {
 export function detectColumns(headers: string[]): Record<string, number> {
   const mapping: Record<string, number> = {}
   const rules: Record<string, RegExp> = {
-    numero: /num[eé]ro|n°|facture.*num|ref/i,
+    numero: /num[eé]ro|n°|facture.*num|ref|pi[eè]ce/i,
     montant_ttc: /montant|ttc|total|amount/i,
     date_facture: /date.*fact|fact.*date|émis/i,
     date_echeance: /[eé]ch[eé]ance|due|expir/i,
