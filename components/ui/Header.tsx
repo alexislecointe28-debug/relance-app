@@ -30,7 +30,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 mr-4 flex-shrink-0">
           <div className="w-2 h-2 rounded-full bg-indigo-500" />
-          <span className="font-bold text-base tracking-tight text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <span className="font-bold text-base tracking-tight text-gray-900 font-[Inter,system-ui,sans-serif]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
             Relance
           </span>
         </Link>
