@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={inter.variable}>
       <body className="bg-gray-50 text-gray-900 antialiased">
         {children}
-        <TimerWrapper />
+        <div style={{position:"fixed",bottom:"24px",right:"24px",width:"48px",height:"48px",background:"red",borderRadius:"50%",zIndex:9999}} />
       </body>
     </html>
   )
