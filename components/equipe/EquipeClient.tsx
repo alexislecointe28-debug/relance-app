@@ -17,14 +17,13 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null)
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess('')
 
     const res = await fetch('/api/equipe/invite', {
       method: 'POST',
@@ -34,18 +33,17 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
 
     const data = await res.json()
     if (!res.ok) {
-      setError(data.error || 'Erreur lors de l\'invitation')
+      setError(data.error || "Erreur lors de l'invitation")
     } else {
-      setSuccess(`Invitation envoyée à ${email}`)
-      setEmail('')
-      setShowForm(false)
-      // Ajoute le membre optimistiquement
+      setCredentials({ email, password: data.tempPassword })
       setMembres(prev => [...prev, {
         id: Math.random().toString(),
         email,
         role: 'membre',
         created_at: new Date().toISOString(),
       }])
+      setEmail('')
+      setShowForm(false)
     }
     setLoading(false)
   }
@@ -58,7 +56,7 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
           <p className="text-gray-500 text-sm">{orgNom} · {membres.length} membre(s)</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => { setShowForm(!showForm); setCredentials(null); setError('') }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -72,7 +70,7 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
       {showForm && (
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 animate-slide-up">
           <h2 className="font-semibold text-gray-900 mb-1">Inviter par email</h2>
-          <p className="text-sm text-gray-500 mb-4">Un email d'invitation sera envoyé. Le collaborateur devra définir son mot de passe.</p>
+          <p className="text-sm text-gray-500 mb-4">Un compte sera créé. Vous recevrez les identifiants à transmettre au collaborateur.</p>
           <form onSubmit={handleInvite} className="flex gap-3">
             <input
               type="email"
@@ -83,18 +81,12 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
               className="input-base flex-1"
               autoFocus
             />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex-shrink-0"
-            >
-              {loading ? '…' : 'Envoyer'}
+            <button type="submit" disabled={loading}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex-shrink-0">
+              {loading ? '…' : 'Créer le compte'}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium flex-shrink-0"
-            >
+            <button type="button" onClick={() => setShowForm(false)}
+              className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium flex-shrink-0">
               Annuler
             </button>
           </form>
@@ -102,9 +94,35 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
         </div>
       )}
 
-      {success && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-6 text-sm text-emerald-700 flex items-center gap-2">
-          <span>✓</span> {success}
+      {/* Affichage identifiants */}
+      {credentials && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6 animate-slide-up">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="font-semibold text-emerald-800 mb-1">✅ Compte créé !</h2>
+              <p className="text-sm text-emerald-700 mb-4">Transmettez ces identifiants à votre collaborateur.</p>
+            </div>
+            <button onClick={() => setCredentials(null)} className="text-emerald-400 hover:text-emerald-600 text-lg">✕</button>
+          </div>
+          <div className="bg-white border border-emerald-200 rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Email</span>
+              <span className="text-sm font-medium text-gray-900">{credentials.email}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Mot de passe temporaire</span>
+              <div className="flex items-center gap-2">
+                <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">{credentials.password}</code>
+                <button
+                  onClick={() => navigator.clipboard.writeText(credentials.password)}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  Copier
+                </button>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-emerald-600 mt-3">⚠️ Notez ce mot de passe maintenant, il ne sera plus affiché.</p>
         </div>
       )}
 
