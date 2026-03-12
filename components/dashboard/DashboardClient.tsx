@@ -39,7 +39,7 @@ export default function DashboardClient({ dossiers, rappels, stats }: Props) {
 
   async function markRappelDone(actionId: string) {
     await supabase.from('actions').update({ rappel_fait: true }).eq('id', actionId)
-    setRappelsDismissed(prev => new Set([...prev, actionId]))
+    setRappelsDismissed(prev => new Set(Array.from(prev).concat(actionId)))
     router.refresh()
   }
 
