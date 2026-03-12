@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import TimerFloat from '@/components/ui/TimerFloat'
+import TimerWrapper from '@/components/ui/TimerWrapper'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={inter.variable}>
       <body className="bg-gray-50 text-gray-900 antialiased">
         {children}
-        <TimerFloat />
+        <TimerWrapper />
       </body>
     </html>
   )
