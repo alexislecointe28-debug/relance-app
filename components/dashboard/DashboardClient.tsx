@@ -21,10 +21,14 @@ const FILTRES = [
   { key: 'resolu', label: 'Résolu' },
 ] as const
 
-export default function DashboardClient({ dossiers, rappels, stats }: Props) {
+export default function DashboardClient({ dossiers: initialDossiers, rappels, stats }: Props) {
+  const [dossiers, setDossiers] = useState(initialDossiers)
   const [filtre, setFiltre] = useState<string>('tous')
   const [tri, setTri] = useState<'retard' | 'montant'>('retard')
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
+  const [deleteAllLoading, setDeleteAllLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -41,6 +45,24 @@ export default function DashboardClient({ dossiers, rappels, stats }: Props) {
     await supabase.from('actions').update({ rappel_fait: true }).eq('id', actionId)
     setRappelsDismissed(prev => new Set(Array.from(prev).concat(actionId)))
     router.refresh()
+  }
+
+  async function handleDelete(e: React.MouseEvent, id: string) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!confirm('Supprimer ce dossier ? Cette action est irréversible.')) return
+    setDeletingId(id)
+    await fetch(`/api/dossiers/${id}`, { method: 'DELETE' })
+    setDossiers(prev => prev.filter(d => d.id !== id))
+    setDeletingId(null)
+  }
+
+  async function handleDeleteAll() {
+    setDeleteAllLoading(true)
+    await fetch('/api/dossiers/delete-all', { method: 'DELETE' })
+    setDossiers([])
+    setDeleteAllConfirm(false)
+    setDeleteAllLoading(false)
   }
 
   return (
@@ -109,12 +131,36 @@ export default function DashboardClient({ dossiers, rappels, stats }: Props) {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">Trier par</span>
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-              <button onClick={() => setTri('retard')} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tri === 'retard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Retard</button>
-              <button onClick={() => setTri('montant')} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tri === 'montant' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Montant</button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400">Trier par</span>
+              <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+                <button onClick={() => setTri('retard')} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tri === 'retard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Retard</button>
+                <button onClick={() => setTri('montant')} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${tri === 'montant' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Montant</button>
+              </div>
             </div>
+
+            {/* Tout supprimer */}
+            {dossiers.length > 0 && (
+              deleteAllConfirm ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-red-600 font-medium">Supprimer tout ?</span>
+                  <button onClick={handleDeleteAll} disabled={deleteAllLoading}
+                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium disabled:opacity-50">
+                    {deleteAllLoading ? '…' : 'Confirmer'}
+                  </button>
+                  <button onClick={() => setDeleteAllConfirm(false)}
+                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 hover:bg-gray-50">
+                    Annuler
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setDeleteAllConfirm(true)}
+                  className="px-3 py-1.5 border border-red-200 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg text-xs font-medium transition-colors">
+                  Tout supprimer
+                </button>
+              )
+            )}
           </div>
         </div>
 
@@ -146,6 +192,21 @@ export default function DashboardClient({ dossiers, rappels, stats }: Props) {
                   <div className="text-right flex-shrink-0">
                     <div className="font-bold text-sm montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
                   </div>
+                  {/* Bouton supprimer */}
+                  <button
+                    onClick={(e) => handleDelete(e, dossier.id)}
+                    disabled={deletingId === dossier.id}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-50"
+                    title="Supprimer ce dossier"
+                  >
+                    {deletingId === dossier.id ? (
+                      <span className="text-xs">…</span>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                      </svg>
+                    )}
+                  </button>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300 flex-shrink-0">
                     <path d="M9 18l6-6-6-6"/>
                   </svg>
