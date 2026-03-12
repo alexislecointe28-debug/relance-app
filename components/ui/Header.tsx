@@ -5,11 +5,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
 const navLinks = [
+  { href: '/dashboard', label: 'Dashboard' },
   { href: '/agenda', label: 'Agenda' },
-  { href: '/equipe', label: 'Équipe' },
   { href: '/qualifier', label: 'Qualifier' },
-  { href: '/parametres', label: 'Paramètres' },
+  { href: '/equipe', label: 'Équipe' },
   { href: '/import', label: 'Importer' },
+  { href: '/parametres', label: 'Paramètres' },
 ]
 
 export default function Header() {
@@ -23,38 +24,47 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-gray-50/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5 mr-4 flex-shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5h14M3 10h10M3 15h7" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className="font-bold text-base tracking-tight text-gray-900">Relance</span>
+
+        {/* Logo */}
+        <Link href="/dashboard" className="flex items-center gap-2 mr-4 flex-shrink-0">
+          <div className="w-2 h-2 rounded-full bg-indigo-500" />
+          <span className="font-bold text-base tracking-tight text-gray-900" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+            Relance
+          </span>
         </Link>
 
+        {/* Nav */}
         <nav className="flex items-center gap-1 flex-1">
-          {navLinks.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                pathname.startsWith(link.href)
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map(link => {
+            const isActive = link.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : pathname.startsWith(link.href)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                  isActive
+                    ? 'bg-white text-gray-900 border-gray-200 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-white border-transparent'
+                }`}
+                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
+        {/* Déconnexion */}
         <button
           onClick={handleLogout}
-          className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-100 flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 flex items-center gap-1.5 transition-colors"
+          style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>
           Déconnexion
