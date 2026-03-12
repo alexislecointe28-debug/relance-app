@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
+import TimerFloat from '@/components/ui/TimerFloat'
 
-const dmSans = DM_Sans({ 
+const inter = Inter({ 
   subsets: ['latin'],
-  variable: '--font-dm-sans',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -14,8 +15,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={dmSans.variable}>
-      <body className="bg-canvas text-white antialiased">{children}</body>
+    <html lang="fr" className={inter.variable}>
+      <body className="bg-gray-50 text-gray-900 antialiased">
+        {children}
+        <TimerFloat />
+      </body>
     </html>
   )
 }
