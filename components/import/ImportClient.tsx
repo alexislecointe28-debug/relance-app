@@ -27,13 +27,25 @@ export default function ImportClient() {
   function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string
+
+    function parseCsv(text: string) {
       const sep = detectSeparator(text)
       const rows = text.split('\n').map(r => r.split(sep).map(c => c.trim().replace(/^"|"$/g, '')))
       const h = rows[0] || []
       setHeaders(h); setRawCsv(rows.slice(1).filter(r => r.some(c => c))); setMapping(detectColumns(h)); setStep('map')
+    }
+
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string
+      // Si on détecte des caractères corrompus, réessayer en Latin-1
+      if (text.includes('\uFFFD') || /[\x80-\x9F]/.test(text)) {
+        const r2 = new FileReader()
+        r2.onload = (ev2) => parseCsv(ev2.target?.result as string)
+        r2.readAsText(file, 'windows-1252')
+      } else {
+        parseCsv(text)
+      }
     }
     reader.readAsText(file, 'UTF-8')
   }
