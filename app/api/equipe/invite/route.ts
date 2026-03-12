@@ -28,6 +28,7 @@ export async function POST(request: Request) {
 
   const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
 
+  // Créer l'utilisateur — le trigger va créer une fausse org automatiquement
   const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
     email,
     password: tempPassword,
@@ -36,13 +37,29 @@ export async function POST(request: Request) {
 
   if (createError) return NextResponse.json({ error: createError.message }, { status: 500 })
 
-  await supabase.from('membres').insert({
-    user_id: newUser.user.id,
+  const newUserId = newUser.user.id
+
+  // Trouver et supprimer la fausse org créée par le trigger
+  const { data: fakeMembre } = await adminClient
+    .from('membres')
+    .select('organisation_id')
+    .eq('user_id', newUserId)
+    .single()
+
+  if (fakeMembre) {
+    // Supprimer le faux membre
+    await adminClient.from('membres').delete().eq('user_id', newUserId)
+    // Supprimer la fausse organisation
+    await adminClient.from('organisations').delete().eq('id', fakeMembre.organisation_id)
+  }
+
+  // Insérer le bon membre dans la bonne organisation
+  await adminClient.from('membres').insert({
+    user_id: newUserId,
     organisation_id: membre.organisation_id,
     email,
     role: 'membre',
   })
 
-  // Retourne le mot de passe pour l'afficher dans l'UI
   return NextResponse.json({ success: true, tempPassword })
 }
