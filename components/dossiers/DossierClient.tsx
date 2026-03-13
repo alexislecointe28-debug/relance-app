@@ -197,7 +197,7 @@ export default function DossierClient({ dossier: initial }: Props) {
       </div>
 
       {modal === 'appel' && <ModalAppel dossierId={dossier.id} onClose={() => setModal(null)} onSaved={onActionAdded} />}
-      {modal === 'email' && <ModalEmail dossierId={dossier.id} onClose={() => setModal(null)} onSaved={onActionAdded} />}
+      {modal === 'email' && <ModalEmail dossierId={dossier.id} contactEmail={dossier.contact?.email || ''} montantTotal={dossier.montant_total} onClose={() => setModal(null)} onSaved={onActionAdded} />}
       {modal === 'contact' && <ModalContact dossierId={dossier.id} contact={dossier.contact} onClose={() => setModal(null)} onSaved={onContactSaved} />}
     </main>
   )
@@ -285,8 +285,12 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   )
 }
 
-function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClose: () => void; onSaved: (a: Action) => void }) {
+function ModalEmail({ dossierId, contactEmail, montantTotal, onClose, onSaved }: { dossierId: string; contactEmail: string; montantTotal: number; onClose: () => void; onSaved: (a: Action) => void }) {
   const [niveau, setNiveau] = useState<NiveauEmail>('cordial')
+  const [emailDest, setEmailDest] = useState(contactEmail)
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [sendError, setSendError] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
@@ -294,13 +298,39 @@ function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   async function handleSave() {
     setLoading(true)
     const { data: membre } = await supabase.from('membres').select('id').single()
-    const { data } = await supabase.from('actions').insert({ dossier_id: dossierId, type: 'email', niveau_email: niveau, notes, membre_id: membre?.id }).select().single()
+    setSending(true)
+    setSendError('')
+    // Envoyer via API Resend
+    if (emailDest) {
+      const res = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dossier_id: dossierId, niveau, email_destinataire: emailDest, notes }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        setSendError(err.error || "Erreur lors de l'envoi")
+        setSending(false)
+        return
+      }
+      setSent(true)
+    }
+    // Enregistrer en base
+    const { data } = await supabase.from('actions').insert({ dossier_id: dossierId, type: 'email', niveau_email: niveau, notes: notes + (emailDest ? ' — envoyé à ' + emailDest : ''), membre_id: membre?.id }).select().single()
+    setSending(false)
     if (data) onSaved(data as Action)
     setLoading(false)
   }
 
   return (
     <Modal title="✉️ Un mail bien placé, ça peut suffire." onClose={onClose}>
+      <div className="mb-3">
+        <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Envoyer à</label>
+        <input type="email" value={emailDest} onChange={e => setEmailDest(e.target.value)}
+          placeholder="client@entreprise.fr"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+        {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email de contact — remplis le champ ou va dans le contact.</p>}
+      </div>
       <div className="space-y-4">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Niveau</label>
