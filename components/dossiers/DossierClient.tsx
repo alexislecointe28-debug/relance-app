@@ -251,7 +251,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   }
 
   return (
-    <Modal title="📞 T'as décroché. C'est déjà ça." onClose={onClose}>
+    <Modal title={'📞 Décroché. Note vite.'} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Résultat</label>
@@ -296,7 +296,7 @@ function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   }
 
   return (
-    <Modal title="✉️ Un mail bien placé ça peut suffire." onClose={onClose}>
+    <Modal title="✉️ Un mail bien placé, ça peut suffire." onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Niveau</label>
