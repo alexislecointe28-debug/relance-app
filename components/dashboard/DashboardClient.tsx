@@ -108,6 +108,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     })
     if (modalStatut) {
       await supabase.from("dossiers").update({ statut: modalStatut }).eq("id", modalDossier.id)
+      const labels: Record<string, string> = { resolu: "Dossier résolu", promesse: "Promesse de paiement", en_attente: "En attente", a_relancer: "À relancer" }
+      await supabase.from("actions").insert({ dossier_id: modalDossier.id, type: "note", notes: "Statut mis à jour : " + labels[modalStatut], membre_id: membre?.id })
       if (modalStatut === "resolu") {
         const s = document.createElement("script")
         s.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
