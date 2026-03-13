@@ -601,3 +601,231 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     </main>
   )
 }
+
+
+// ---- Composant Modal Relancer réutilisable ----
+function ModalRelancer({
+  dossier, initialType, onClose, onSaved
+}: {
+  dossier: Dossier & { nb_factures: number }
+  initialType: 'appel' | 'email'
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const supabase = createClient()
+  const [type, setType] = useState<'appel' | 'email'>(initialType)
+
+  // Appel state
+  const [notes, setNotes] = useState('')
+  const [statut, setStatut] = useState<StatutDossier | null>(null)
+  const [rappel, setRappel] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Email state — étape 1
+  const [emailDest, setEmailDest] = useState(dossier.contact?.email || '')
+  const [niveau, setNiveau] = useState<'cordial' | 'ferme' | 'mise_en_demeure'>('cordial')
+  const [emailNotes, setEmailNotes] = useState('')
+  // Email state — étape 2 preview
+  const [emailStep, setEmailStep] = useState<'compose' | 'preview'>('compose')
+  const [emailBody, setEmailBody] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [sendError, setSendError] = useState('')
+
+  const TEXTES = {
+    cordial: `Madame, Monsieur,
+
+Sauf erreur de notre part, nous constatons qu'une facture d'un montant de ${dossier.montant_total.toFixed(2)} € reste à ce jour impayée.
+
+Nous vous serions reconnaissants de bien vouloir procéder au règlement de cette somme dans les meilleurs délais.
+
+Cordialement,`,
+    ferme: `Madame, Monsieur,
+
+Malgré notre précédent rappel, nous constatons que la somme de ${dossier.montant_total.toFixed(2)} € n'a toujours pas été réglée.
+
+Nous vous mettons en demeure de procéder au paiement dans un délai de 8 jours.
+
+Cordialement,`,
+    mise_en_demeure: `Madame, Monsieur,
+
+En l'absence de règlement, nous vous adressons la présente mise en demeure de régler la somme de ${dossier.montant_total.toFixed(2)} € dans un délai de 48 heures.
+
+Passé ce délai, une procédure judiciaire sera engagée.`,
+  }
+
+  async function handleAppelSave() {
+    setLoading(true)
+    const { data: membre } = await supabase.from('membres').select('id').single()
+    await supabase.from('actions').insert({
+      dossier_id: dossier.id, type: 'appel',
+      notes, membre_id: membre?.id, rappel_at: rappel || null
+    })
+    if (statut) {
+      await supabase.from('dossiers').update({ statut }).eq('id', dossier.id)
+      if (statut === 'resolu') {
+        const s = document.createElement('script')
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js'
+        s.onload = () => { (window as any).confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] }) }
+        document.head.appendChild(s)
+      }
+    }
+    setLoading(false)
+    onSaved()
+  }
+
+  async function handleEmailSend() {
+    setSending(true)
+    setSendError('')
+    const res = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dossier_id: dossier.id, niveau, email_destinataire: emailDest, notes: emailNotes, body_override: emailBody }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      setSendError(err.error || "Erreur lors de l'envoi")
+      setSending(false)
+      return
+    }
+    const { data: membre } = await supabase.from('membres').select('id').single()
+    await supabase.from('actions').insert({
+      dossier_id: dossier.id, type: 'email', niveau_email: niveau,
+      notes: (emailNotes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
+      membre_id: membre?.id
+    })
+    setSending(false)
+    setSent(true)
+    setTimeout(() => onSaved(), 1000)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="font-bold text-gray-900">{dossier.societe}</div>
+            <div className="text-xs text-gray-400">{dossier.jours_retard}j de retard · {formatMontant(dossier.montant_total)}</div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+        </div>
+
+        {/* Toggle Appel / Email — seulement sur étape 1 */}
+        {emailStep === 'compose' && (
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => setType('appel')}
+              className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${type === 'appel' ? 'bg-indigo-50 border-indigo-300 text-indigo-600' : 'border-gray-200 text-gray-500'}`}>
+              📞 Appel
+            </button>
+            <button onClick={() => setType('email')}
+              className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${type === 'email' ? 'bg-indigo-50 border-indigo-300 text-indigo-600' : 'border-gray-200 text-gray-500'}`}>
+              ✉️ Email
+            </button>
+          </div>
+        )}
+
+        {/* ---- APPEL ---- */}
+        {type === 'appel' && (
+          <>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Statut</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { value: 'resolu', label: 'Résolu', emoji: '🎉', color: 'bg-emerald-50 border-emerald-300 text-emerald-700' },
+                  { value: 'promesse', label: 'Promesse', emoji: '🤝', color: 'bg-blue-50 border-blue-300 text-blue-700' },
+                  { value: 'en_attente', label: 'En attente', emoji: '⏳', color: 'bg-yellow-50 border-yellow-300 text-yellow-700' },
+                  { value: 'a_relancer', label: 'À relancer', emoji: '🔄', color: 'bg-gray-50 border-gray-300 text-gray-700' },
+                ] as const).map(s => (
+                  <button key={s.value} onClick={() => setStatut(statut === s.value ? null : s.value)}
+                    className={`py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${statut === s.value ? s.color : 'border-gray-200 text-gray-400'}`}>
+                    {s.emoji} {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
+              placeholder="Il a dit quoi ? Promis quoi ? Inventé quoi ?"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Rappel (optionnel)</label>
+              <input type="datetime-local" value={rappel} onChange={e => setRappel(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600">Annuler</button>
+              <button onClick={handleAppelSave} disabled={loading}
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
+                {loading ? '…' : 'Noté →'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ---- EMAIL étape 1 : composer ---- */}
+        {type === 'email' && emailStep === 'compose' && (
+          <>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Envoyer à</label>
+              <input type="email" value={emailDest} onChange={e => setEmailDest(e.target.value)}
+                placeholder="client@entreprise.fr"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+              {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email de contact.</p>}
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Niveau</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['cordial', 'ferme', 'mise_en_demeure'] as const).map(n => (
+                  <button key={n} onClick={() => setNiveau(n)}
+                    className={`py-2 rounded-xl border text-xs font-medium transition-all ${niveau === n
+                      ? n === 'mise_en_demeure' ? 'bg-red-50 border-red-300 text-red-600'
+                        : n === 'ferme' ? 'bg-orange-50 border-orange-300 text-orange-600'
+                        : 'bg-blue-50 border-blue-300 text-blue-600'
+                      : 'border-gray-200 text-gray-500'}`}>
+                    {n === 'cordial' ? 'Cordial' : n === 'ferme' ? 'Ferme' : 'Mise en demeure'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <textarea value={emailNotes} onChange={e => setEmailNotes(e.target.value)} rows={2}
+              placeholder="Le contexte, pour s'en souvenir dans 3 semaines."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            <div className="flex gap-2">
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600">Annuler</button>
+              <button onClick={() => { setEmailBody(TEXTES[niveau]); setEmailStep('preview') }} disabled={!emailDest}
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50">
+                Voir le mail →
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ---- EMAIL étape 2 : preview éditable ---- */}
+        {type === 'email' && emailStep === 'preview' && (
+          <>
+            <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2">
+              <span>À :</span>
+              <span className="font-medium text-gray-700">{emailDest}</span>
+              <button onClick={() => setEmailStep('compose')} className="ml-auto text-indigo-600 hover:underline">Modifier</button>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Contenu — éditable</label>
+              <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={10}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none leading-relaxed" />
+            </div>
+            {sendError && <p className="text-xs text-red-500">{sendError}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => setEmailStep('compose')} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600">Retour</button>
+              <button onClick={handleEmailSend} disabled={sending || sent}
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50">
+                {sending ? 'Envoi...' : sent ? 'Envoyé ✓' : 'Envoyer →'}
+              </button>
+            </div>
+          </>
+        )}
+
+      </div>
+    </div>
+  )
+}
