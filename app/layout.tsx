@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="bg-gray-50 text-gray-900 antialiased pb-16 sm:pb-0">
+      <body className="bg-gray-50 text-gray-900 antialiased pb-20 sm:pb-0">
         {children}
         <TimerWrapper />
         <BottomNav />

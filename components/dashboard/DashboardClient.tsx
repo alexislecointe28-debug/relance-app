@@ -181,27 +181,27 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                     <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? 'bg-red-400' : dossier.jours_retard > 30 ? 'bg-orange-400' : 'bg-gray-200'}`} />
 
                     <div className="flex-1 min-w-0">
-                      {/* Ligne 1 : société + montant */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold text-sm text-gray-900 truncate">{dossier.societe}</div>
-                        <div className="font-bold text-sm montant-display text-gray-900 flex-shrink-0">{formatMontant(dossier.montant_total)}</div>
-                      </div>
-                      {/* Ligne 2 : factures + retard + badge */}
-                      <div className="flex items-center justify-between gap-2 mt-1">
-                        <div className="text-xs text-gray-400">
+                      {/* Ligne 1 : société */}
+                      <div className="font-semibold text-sm text-gray-900 truncate">{dossier.societe}</div>
+                      {/* Ligne 2 : factures + retard */}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-gray-400">
                           {dossier.nb_factures} facture{dossier.nb_factures > 1 ? 's' : ''}
-                          {dossier.jours_retard > 0 && (
-                            <span className={`ml-2 ${dossier.jours_retard > 60 ? 'text-red-500' : 'text-orange-500'}`}>
-                              • {dossier.jours_retard}j
-                            </span>
-                          )}
-                        </div>
-                        <span className={`badge flex-shrink-0 text-xs max-w-[80px] truncate sm:max-w-none ${getStatutDossierColor(dossier.statut)}`}>
-                          {getStatutDossierLabel(dossier.statut)}
                         </span>
+                        {dossier.jours_retard > 0 && (
+                          <span className={`text-xs ${dossier.jours_retard > 60 ? 'text-red-500' : 'text-orange-500'}`}>
+                            • {dossier.jours_retard}j
+                          </span>
+                        )}
                       </div>
                     </div>
 
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <div className="font-bold text-sm montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
+                      <span className={`badge text-xs ${getStatutDossierColor(dossier.statut)}`}>
+                        {getStatutDossierLabel(dossier.statut)}
+                      </span>
+                    </div>
                     <button
                       onClick={(e) => handleDelete(e, dossier.id)}
                       disabled={deletingId === dossier.id}
