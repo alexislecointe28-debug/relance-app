@@ -1,6 +1,6 @@
 'use client'
-import Link from 'next/link'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -8,10 +8,8 @@ import { useRouter } from 'next/navigation'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -19,52 +17,55 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess('')
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setError(error.message)
-      else router.push('/dashboard')
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) setError(error.message)
-      else setSuccess('Compte créé ! Vous pouvez vous connecter.')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setError('Email ou mot de passe incorrect.')
+      setLoading(false)
+      return
     }
-    setLoading(false)
+    router.push('/')
+    router.refresh()
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 grid-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-3">
-            <img src="/logo.png" alt="Paynelope" style={{ height: "56px", width: "240px", objectFit: "contain" }} />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <img src="/logo.png" alt="Paynelope" style={{ height: '56px', width: '240px', objectFit: 'contain' }} />
           </div>
-          <p className="text-gray-500 text-sm">Rends l’argent.</p>
+          <p className="text-sm text-gray-400">Rends l’argent.</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm animate-fade-in">
-          <h1 className="text-lg font-semibold mb-6 text-gray-900">
-            {mode === 'login' ? 'Connexion' : 'Créer un compte'}
-          </h1>
-          {error && <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
-          {success && <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm">{success}</div>}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="input-base" placeholder="votre@email.com" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Mot de passe</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="input-base" placeholder="••••••••" />
-            </div>
-            <button type="submit" disabled={loading} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm disabled:opacity-50">
-              {loading ? 'Chargement…' : mode === 'login' ? 'Se connecter' : 'Créer le compte'}
-            </button>
-          </form>
-          <Link href='/forgot-password' className='block text-center text-xs text-gray-400 hover:text-indigo-600 mt-2'>Mot de passe oublié ?</Link>
-          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-4 text-sm text-gray-500 hover:text-gray-900 text-center">
-            {mode === 'login' ? "Pas de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
+        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
+              placeholder="vous@entreprise.fr"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Mot de passe</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
+              placeholder="••••••••"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+          </div>
+          {error && <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          <button type="submit" disabled={loading}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm disabled:opacity-50">
+            {loading ? 'Connexion...' : 'Se connecter →'}
           </button>
-        </div>
+          <div className="text-center pt-1">
+            <Link href="/forgot-password" className="text-xs text-gray-400 hover:text-gray-600">
+              Mot de passe oublié ?
+            </Link>
+          </div>
+        </form>
+        <p className="text-center text-xs text-gray-400 mt-4">
+          Pas encore de compte ?{' '}
+          <Link href="/signup" className="text-indigo-600 hover:underline font-medium">
+            Créer un espace
+          </Link>
+        </p>
       </div>
     </div>
   )
