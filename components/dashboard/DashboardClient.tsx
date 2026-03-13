@@ -205,7 +205,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                     <button
                       onClick={(e) => handleDelete(e, dossier.id)}
                       disabled={deletingId === dossier.id}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-50"
+                      className="hidden sm:flex p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-50"
                       title="Supprimer ce dossier"
                     >
                       {deletingId === dossier.id ? (
