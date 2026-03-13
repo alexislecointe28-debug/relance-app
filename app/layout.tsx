@@ -15,11 +15,11 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Relance',
+    title: 'Paynelope',
   },
   formatDetection: { telephone: false },
-  title: 'Relance — CRM Recouvrement',
-  description: 'Gestion du recouvrement de créances pour TPE',
+  title: 'Paynelope',
+  description: 'Rends l\'argent.'argent.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
