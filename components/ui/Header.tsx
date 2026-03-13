@@ -35,37 +35,33 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Nav — scroll horizontal sur mobile */}
-        <nav className="flex-1 overflow-x-auto scrollbar-none -mx-1 px-1">
-          <div className="flex items-center gap-1 w-max sm:w-auto">
-            {navLinks.map(link => {
-              const isActive = link.href === '/dashboard'
-                ? pathname === '/dashboard'
-                : pathname.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border whitespace-nowrap \${
-                    isActive
-                      ? 'bg-white text-gray-900 border-gray-200 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-white border-transparent'
-                  }`}
-                  style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </div>
+        {/* Nav desktop seulement */}
+        <nav className="hidden sm:flex items-center gap-1 flex-1">
+          {navLinks.map(link => {
+            const isActive = link.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : pathname.startsWith(link.href)
+            return (
+              <Link key={link.href} href={link.href}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border whitespace-nowrap ${
+                  isActive
+                    ? 'bg-white text-gray-900 border-gray-200 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-white border-transparent'
+                }`}
+                style={{ fontFamily: 'Inter, system-ui, sans-serif' }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* Déconnexion — icône seule sur mobile */}
-        <button
-          onClick={handleLogout}
+        <div className="flex-1 sm:flex-none" />
+
+        {/* Déconnexion */}
+        <button onClick={handleLogout}
           className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition-colors"
-          title="Déconnexion"
-        >
+          title="Déconnexion">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>
