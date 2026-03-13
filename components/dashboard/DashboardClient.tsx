@@ -27,7 +27,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     [dossiers]
   )
 
-  const aQualifier = dossiers.filter(d => !d.contact_qualifie).length
+  const aQualifier = dossiers.filter(d => !d.contact).length
   const rappelsVisible = rappels.filter(r => !rappelsDismissed.has(r.id))
   const displayed = showAll ? urgences : urgences.slice(0, 5)
 
