@@ -286,80 +286,136 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
 }
 
 function ModalEmail({ dossierId, contactEmail, montantTotal, onClose, onSaved }: { dossierId: string; contactEmail: string; montantTotal: number; onClose: () => void; onSaved: (a: Action) => void }) {
+  const supabase = createClient()
   const [niveau, setNiveau] = useState<NiveauEmail>('cordial')
   const [emailDest, setEmailDest] = useState(contactEmail)
+  const [notes, setNotes] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [sendError, setSendError] = useState('')
-  const [notes, setNotes] = useState('')
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const [step, setStep] = useState<'compose' | 'preview'>('compose')
+  const [emailBody, setEmailBody] = useState('')
 
-  async function handleSave() {
-    setLoading(true)
-    const { data: membre } = await supabase.from('membres').select('id').single()
+  const TEXTES: Record<NiveauEmail, string> = {
+    cordial: `Madame, Monsieur,
+
+Sauf erreur de notre part, nous constatons qu'une facture d'un montant de ${montantTotal.toFixed(2)} € reste à ce jour impayée.
+
+Nous vous serions reconnaissants de bien vouloir procéder au règlement de cette somme dans les meilleurs délais.
+
+Si ce règlement a déjà été effectué, veuillez ne pas tenir compte de ce message.
+
+Cordialement,`,
+    ferme: `Madame, Monsieur,
+
+Malgré notre précédent rappel, nous constatons que la somme de ${montantTotal.toFixed(2)} € n'a toujours pas été réglée.
+
+Nous vous mettons en demeure de procéder au paiement de cette somme dans un délai de 8 jours à compter de la réception du présent courrier.
+
+À défaut, nous nous verrons contraints d'engager les procédures de recouvrement à notre disposition.
+
+Cordialement,`,
+    mise_en_demeure: `Madame, Monsieur,
+
+En l'absence de règlement de votre part, et après plusieurs relances restées sans suite, nous vous adressons la présente mise en demeure de régler la somme de ${montantTotal.toFixed(2)} € dans un délai de 48 heures.
+
+Passé ce délai, nous engagerons sans préavis supplémentaire une procédure judiciaire de recouvrement, dont les frais vous seront intégralement imputés.`,
+  }
+
+  function handlePreview() {
+    setEmailBody(TEXTES[niveau])
+    setStep('preview')
+  }
+
+  async function handleSend() {
     setSending(true)
     setSendError('')
-    // Envoyer via API Resend
-    if (emailDest) {
-      const res = await fetch('/api/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dossier_id: dossierId, niveau, email_destinataire: emailDest, notes }),
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        setSendError(err.error || "Erreur lors de l'envoi")
-        setSending(false)
-        return
-      }
-      setSent(true)
+    const res = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dossier_id: dossierId, niveau, email_destinataire: emailDest, notes, body_override: emailBody }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      setSendError(err.error || "Erreur lors de l'envoi")
+      setSending(false)
+      return
     }
-    // Enregistrer en base
-    const { data } = await supabase.from('actions').insert({ dossier_id: dossierId, type: 'email', niveau_email: niveau, notes: notes + (emailDest ? ' — envoyé à ' + emailDest : ''), membre_id: membre?.id }).select().single()
+    const membreRes = await supabase.from('membres').select('id').single()
+    const { data } = await supabase.from('actions').insert({
+      dossier_id: dossierId, type: 'email', niveau_email: niveau,
+      notes: (notes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
+      membre_id: membreRes.data?.id
+    }).select().single()
     setSending(false)
+    setSent(true)
     if (data) onSaved(data as Action)
-    setLoading(false)
+    setTimeout(() => onClose(), 1200)
   }
 
   return (
     <Modal title="✉️ Un mail bien placé, ça peut suffire." onClose={onClose}>
-      <div className="mb-3">
-        <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Envoyer à</label>
-        <input type="email" value={emailDest} onChange={e => setEmailDest(e.target.value)}
-          placeholder="client@entreprise.fr"
-          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-        {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email de contact — remplis le champ ou va dans le contact.</p>}
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Niveau</label>
-          <div className="grid grid-cols-3 gap-2">
-            {(['cordial', 'ferme', 'mise_en_demeure'] as NiveauEmail[]).map(n => (
-              <button key={n} onClick={() => setNiveau(n)}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all ${
-                  niveau === n
-                    ? n === 'mise_en_demeure' ? 'bg-red-50 border-red-300 text-red-600'
-                      : n === 'ferme' ? 'bg-orange-50 border-orange-300 text-orange-600'
-                      : 'bg-blue-50 border-blue-300 text-blue-600'
-                    : 'border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                }`}>
-                {getNiveauEmailLabel(n)}
-              </button>
-            ))}
+      {step === 'compose' ? (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Envoyer à</label>
+            <input type="email" value={emailDest} onChange={e => setEmailDest(e.target.value)}
+              placeholder="client@entreprise.fr"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email de contact — remplis le champ ou va dans le contact.</p>}
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Niveau</label>
+            <div className="flex gap-2">
+              {(['cordial', 'ferme', 'mise_en_demeure'] as NiveauEmail[]).map(n => (
+                <button key={n} type="button" onClick={() => setNiveau(n)}
+                  className={"flex-1 py-2 rounded-xl border text-xs font-medium transition-all " + (niveau === n ? 'bg-indigo-50 border-indigo-300 text-indigo-600' : 'border-gray-200 text-gray-500')}>
+                  {n === 'cordial' ? 'Cordial' : n === 'ferme' ? 'Ferme' : 'Mise en demeure'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Notes internes</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
+              placeholder="Le contexte, pour s'en souvenir dans 3 semaines."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50">
+              Annuler
+            </button>
+            <button type="button" onClick={handlePreview} disabled={!emailDest}
+              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+              Voir le mail →
+            </button>
           </div>
         </div>
-        <div>
-          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Notes internes</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="input-base resize-none" placeholder="Le contexte, pour s'en souvenir dans 3 semaines." />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <span>À :</span><span className="font-medium text-gray-700">{emailDest}</span>
+            <button onClick={() => setStep('compose')} className="ml-auto text-indigo-600 hover:underline text-xs">Modifier</button>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Contenu — éditable</label>
+            <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={10}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none leading-relaxed" />
+          </div>
+          {sendError && <p className="text-xs text-red-500">{sendError}</p>}
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={() => setStep('compose')}
+              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50">
+              Retour
+            </button>
+            <button type="button" onClick={handleSend} disabled={sending || sent}
+              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+              {sending ? 'Envoi...' : sent ? 'Envoyé ✓' : 'Envoyer →'}
+            </button>
+          </div>
         </div>
-        <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
-          <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'Noté →'}
-          </button>
-        </div>
-      </div>
+      )}
     </Modal>
   )
 }
