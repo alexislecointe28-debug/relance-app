@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { Dossier, Action } from '@/types'
+import { Dossier, Action, StatutDossier } from '@/types'
 import { formatMontant, getStatutDossierLabel, getStatutDossierColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -44,6 +44,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [modalNiveau, setModalNiveau] = useState("cordial")
   const [modalLoading, setModalLoading] = useState(false)
   const [modalRappel, setModalRappel] = useState("")
+  const [modalStatut, setModalStatut] = useState<StatutDossier | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -90,6 +91,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     setModalNiveau("cordial")
     setModalType("appel")
     setModalRappel("")
+    setModalStatut(null)
   }
 
   async function handleModalSave() {
@@ -104,6 +106,15 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       membre_id: membre?.id,
       rappel_at: modalRappel || null
     })
+    if (modalStatut) {
+      await supabase.from("dossiers").update({ statut: modalStatut }).eq("id", modalDossier.id)
+      if (modalStatut === "resolu") {
+        const s = document.createElement("script")
+        s.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
+        s.onload = () => { (window as any).confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ["#6366F1", "#10B981", "#F59E0B"] }) }
+        document.head.appendChild(s)
+      }
+    }
     const newScore = scoreJour + 1
     setScoreJour(newScore)
     if (newScore === 1) incrementStreak()
@@ -298,6 +309,25 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 ))}
               </div>
             )}
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider font-medium">Statut du dossier</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { value: "resolu", label: "Résolu", emoji: "🎉", color: "bg-emerald-50 border-emerald-300 text-emerald-700" },
+                  { value: "promesse", label: "Promesse", emoji: "🤝", color: "bg-blue-50 border-blue-300 text-blue-700" },
+                  { value: "en_attente", label: "En attente", emoji: "⏳", color: "bg-yellow-50 border-yellow-300 text-yellow-700" },
+                  { value: "a_relancer", label: "À relancer", emoji: "🔄", color: "bg-gray-50 border-gray-300 text-gray-700" },
+                ] as const).map(s => (
+                  <button key={s.value} onClick={() => setModalStatut(modalStatut === s.value ? null : s.value)}
+                    className={`py-2 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                      modalStatut === s.value ? s.color : "border-gray-200 text-gray-400"
+                    }`}>
+                    <span>{s.emoji}</span>{s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <textarea
               value={modalNotes}
               onChange={e => setModalNotes(e.target.value)}
