@@ -528,6 +528,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   {t === 'appel' ? '📞 Appel' : '✉️ Email'}
                 </button>
               ))}
+              {modalType === 'email' && (
+                <Link href={`/dossiers/${modalDossier?.id}?action=email`}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100 transition-colors">
+                  ✏️ Rédiger et prévisualiser le mail complet →
+                </Link>
+              )}
             </div>
             {modalType === 'email' && (
               <div className="grid grid-cols-3 gap-2">

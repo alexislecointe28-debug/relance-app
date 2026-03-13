@@ -256,7 +256,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   async function handleSave() {
     setLoading(true)
     const { data: membre } = await supabase.from('membres').select('id').single()
-    const { data } = await supabase.from('actions').insert({ dossier_id: dossierId, type: 'appel', resultat, notes, rappel_le: rappelLe || null, membre_id: membre?.id }).select().single()
+    const { data } = await supabase.from('actions').insert({ dossier_id: dossierId, type: 'appel', resultat, notes, rappel_le: rappelLe || null, membre_id: membre?.id }).select('*, membre:membres(prenom, nom)').single()
     if (data) onSaved(data as Action)
     setLoading(false)
   }
@@ -353,7 +353,7 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
       dossier_id: dossierId, type: 'email', niveau_email: niveau,
       notes: (notes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
       membre_id: membreRes.data?.id
-    }).select().single()
+    }).select('*, membre:membres(prenom, nom)').single()
     setSending(false)
     setSent(true)
     if (actionData) onSaved(actionData as Action)
