@@ -342,13 +342,14 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
       return
     }
     const membreRes = await supabase.from('membres').select('id').single()
-    await supabase.from('actions').insert({
+    const { data: actionData } = await supabase.from('actions').insert({
       dossier_id: dossierId, type: 'email', niveau_email: niveau,
       notes: (notes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
       membre_id: membreRes.data?.id
     }).select().single()
     setSending(false)
     setSent(true)
+    if (actionData) onSaved(actionData as Action)
     setTimeout(() => onClose(), 1200)
   }
 
