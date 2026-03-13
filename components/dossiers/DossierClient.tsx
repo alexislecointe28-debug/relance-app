@@ -27,6 +27,10 @@ export default function DossierClient({ dossier: initial }: Props) {
   async function updateStatut(statut: StatutDossier) {
     await supabase.from('dossiers').update({ statut }).eq('id', dossier.id)
     setDossier(prev => ({ ...prev, statut }))
+    const labels: Record<string, string> = { resolu: 'Dossier résolu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: 'À relancer' }
+    const { data: membre } = await supabase.from('membres').select('id').single()
+    await supabase.from('actions').insert({ dossier_id: dossier.id, type: 'note', notes: 'Statut mis à jour : ' + labels[statut], membre_id: membre?.id })
+    router.refresh()
     if (statut === 'resolu') {
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] })
     }
