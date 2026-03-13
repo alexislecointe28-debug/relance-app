@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   const { error: membreError } = await supabase
     .from('membres')
-    .insert({ user_id: userId, org_id: org.id, email, role: 'admin', prenom: '', nom: '' })
+    .insert({ user_id: userId, organisation_id: org.id, email, role: 'admin', prenom: '', nom: '' })
 
   if (membreError) {
     await supabase.auth.admin.deleteUser(userId)
