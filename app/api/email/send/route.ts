@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
-  const { dossier_id, niveau, email_destinataire, notes } = await req.json()
+  const { dossier_id, niveau, email_destinataire, notes, body_override } = await req.json()
 
   const { data: org } = await supabase.from('organisations').select('*').single()
   const { data: dossier } = await supabase.from('dossiers').select('*').eq('id', dossier_id).single()
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       from: `${fromName} <onboarding@resend.dev>`,
       to: [email_destinataire],
       subject: template.subject,
-      html: template.html + (notes ? `<hr/><p style="color:#888;font-size:12px;">Note interne : ${notes}</p>` : ''),
+      html: body_override ? body_override.replace(/\n/g, "<br/>") + "<br/><br/><pre style=\"font-family:Arial;color:#555;font-size:14px;\">" + (org?.signature_email || "") + "</pre>" : template.html + (notes ? `<hr/><p style="color:#888;font-size:12px;">Note interne : ${notes}</p>` : ''),
     })
 
     await supabase.from('actions').insert({
