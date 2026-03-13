@@ -528,79 +528,24 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* Modal relancer */}
       {modalDossier && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-bold text-gray-900">{modalDossier.societe}</div>
-                <div className="text-xs text-gray-400">{modalDossier.jours_retard}j de retard · {formatMontant(modalDossier.montant_total)}</div>
-              </div>
-              <button onClick={() => setModalDossier(null)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {(['appel', 'email'] as const).map(t => (
-                <button key={t} onClick={() => setModalType(t)}
-                  className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${modalType === t ? 'bg-indigo-50 border-indigo-300 text-indigo-600' : 'border-gray-200 text-gray-500'}`}>
-                  {t === 'appel' ? '📞 Appel' : '✉️ Email'}
-                </button>
-              ))}
-              {modalType === 'email' && (
-                <Link href={`/dossiers/${modalDossier?.id}?action=email`}
-                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100 transition-colors">
-                  ✏️ Rédiger et prévisualiser le mail complet →
-                </Link>
-              )}
-            </div>
-            {modalType === 'email' && (
-              <div className="grid grid-cols-3 gap-2">
-                {(['cordial', 'ferme', 'mise_en_demeure'] as const).map(n => (
-                  <button key={n} onClick={() => setModalNiveau(n)}
-                    className={`py-2 rounded-xl border text-xs font-medium transition-all ${modalNiveau === n
-                      ? n === 'mise_en_demeure' ? 'bg-red-50 border-red-300 text-red-600'
-                        : n === 'ferme' ? 'bg-orange-50 border-orange-300 text-orange-600'
-                        : 'bg-blue-50 border-blue-300 text-blue-600'
-                      : 'border-gray-200 text-gray-500'}`}>
-                    {n === 'cordial' ? 'Cordial' : n === 'ferme' ? 'Ferme' : 'Mise en demeure'}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div>
-              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Statut</label>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { value: 'resolu', label: 'R\u00e9solu', emoji: '🎉', color: 'bg-emerald-50 border-emerald-300 text-emerald-700' },
-                  { value: 'promesse', label: 'Promesse', emoji: '🤝', color: 'bg-blue-50 border-blue-300 text-blue-700' },
-                  { value: 'en_attente', label: 'En attente', emoji: '⏳', color: 'bg-yellow-50 border-yellow-300 text-yellow-700' },
-                  { value: 'a_relancer', label: '\u00c0 relancer', emoji: '🔄', color: 'bg-gray-50 border-gray-300 text-gray-700' },
-                ] as const).map(s => (
-                  <button key={s.value} onClick={() => setModalStatut(modalStatut === s.value ? null : s.value)}
-                    className={`py-2 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${modalStatut === s.value ? s.color : 'border-gray-200 text-gray-400'}`}>
-                    <span>{s.emoji}</span>{s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <textarea value={modalNotes} onChange={e => setModalNotes(e.target.value)} rows={2}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder={modalType === 'appel' ? "Il a dit quoi ? Promis quoi ? Invent\u00e9 quoi ?" : "Le contexte, pour s'en souvenir dans 3 semaines."} />
-            <div>
-              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Rappel (optionnel)</label>
-              <input type="datetime-local" value={modalRappel} onChange={e => setModalRappel(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setModalDossier(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">Annuler</button>
-              <button onClick={handleModalSave} disabled={modalLoading} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white">
-                {modalLoading ? '\u2026' : 'Not\u00e9 →'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalRelancer
+          dossier={modalDossier}
+          initialType={modalType}
+          onClose={() => setModalDossier(null)}
+          onSaved={() => {
+            const newScore = scoreJour + 1
+            setScoreJour(newScore)
+            if (newScore === 1) incrementStreak()
+            setExitingR(true); setSwipeDirR('right')
+            setTimeout(() => {
+              setSkippedRelance(prev => new Set(Array.from(prev).concat(modalDossier!.id)))
+              setSwipeXR(0); setSwipingR(false); setSwipeDirR(null); setExitingR(false)
+            }, 300)
+            setModalDossier(null)
+            router.refresh()
+          }}
+        />
       )}
-    </main>
-  )
-}
 
 
 // ---- Composant Modal Relancer réutilisable ----
