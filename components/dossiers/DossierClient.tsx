@@ -251,7 +251,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   }
 
   return (
-    <Modal title="📞 Noter un appel" onClose={onClose}>
+    <Modal title="📞 T'as décroché. C'est déjà ça." onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Résultat</label>
@@ -264,7 +264,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Notes</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="input-base resize-none" placeholder="Notes de l'appel…" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} className="input-base resize-none" placeholder="Il a dit quoi ? Promis quoi ? Inventé quoi ?" />
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Date de rappel</label>
@@ -273,7 +273,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'Enregistrer'}
+            {loading ? '…' : 'C'est noté →'}
           </button>
         </div>
       </div>
@@ -296,7 +296,7 @@ function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClos
   }
 
   return (
-    <Modal title="✉️ Envoyer un mail" onClose={onClose}>
+    <Modal title="✉️ Un mail bien placé ça peut suffire." onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Niveau</label>
@@ -317,12 +317,12 @@ function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">Notes internes</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="input-base resize-none" placeholder="Contexte ou suivi…" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="input-base resize-none" placeholder="Le contexte, pour s'en souvenir dans 3 semaines." />
         </div>
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'Enregistrer'}
+            {loading ? '…' : 'C'est noté →'}
           </button>
         </div>
       </div>
@@ -358,7 +358,7 @@ function ModalContact({ dossierId, contact, onClose, onSaved }: { dossierId: str
   ] as const
 
   return (
-    <Modal title="👤 Contact comptabilité" onClose={onClose}>
+    <Modal title="👤 Qui tu vas harceler ?" onClose={onClose}>
       <div className="space-y-3">
         {fields.map(f => (
           <div key={f.key}>
@@ -369,7 +369,7 @@ function ModalContact({ dossierId, contact, onClose, onSaved }: { dossierId: str
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'Enregistrer'}
+            {loading ? '…' : 'C'est noté →'}
           </button>
         </div>
       </div>
