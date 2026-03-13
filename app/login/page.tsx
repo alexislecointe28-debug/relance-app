@@ -36,13 +36,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 grid-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 5h14M3 10h10M3 15h7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <img src="/logo.png" alt="Paynelope" style={{ height: "48px", width: "220px", objectFit: "contain" }} />
+          <div className="flex justify-center mb-3">
+            <img src="/logo.png" alt="Paynelope" style={{ height: "56px", width: "240px", objectFit: "contain" }} />
           </div>
           <p className="text-gray-500 text-sm">Rends l’argent.</p>
         </div>
