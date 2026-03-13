@@ -14,11 +14,11 @@ interface Props {
 }
 
 const FILTRES = [
-  { key: 'tous', label: 'Tous' },
-  { key: 'a_relancer', label: 'À relancer' },
-  { key: 'en_attente', label: 'En attente' },
-  { key: 'promesse', label: 'Promesse' },
-  { key: 'resolu', label: 'Résolu' },
+  { key: 'tous', label: 'Tous', labelMobile: 'Tous' },
+  { key: 'a_relancer', label: 'À relancer', labelMobile: 'Relancer' },
+  { key: 'en_attente', label: 'En attente', labelMobile: 'Attente' },
+  { key: 'promesse', label: 'Promesse', labelMobile: 'Promesse' },
+  { key: 'resolu', label: 'Résolu', labelMobile: 'Résolu' },
 ] as const
 
 export default function DashboardClient({ dossiers: initialDossiers, rappels, stats }: Props) {
@@ -128,8 +128,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-max sm:w-auto">
             {FILTRES.map(f => (
               <button key={f.key} onClick={() => setFiltre(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filtre === f.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>
-                {f.label}
+                className={`px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${filtre === f.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>
+                <span className="sm:hidden">{f.labelMobile}</span><span className="hidden sm:inline">{f.label}</span>
               </button>
             ))}
           </div>
@@ -196,7 +196,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                             </span>
                           )}
                         </div>
-                        <span className={`badge flex-shrink-0 ${getStatutDossierColor(dossier.statut)}`}>
+                        <span className={`badge flex-shrink-0 text-xs max-w-[80px] truncate sm:max-w-none ${getStatutDossierColor(dossier.statut)}`}>
                           {getStatutDossierLabel(dossier.statut)}
                         </span>
                       </div>
@@ -216,7 +216,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                         </svg>
                       )}
                     </button>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300 flex-shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300 flex-shrink-0 hidden sm:block">
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
                   </div>
