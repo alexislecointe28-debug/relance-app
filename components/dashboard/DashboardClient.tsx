@@ -15,24 +15,24 @@ interface Props {
 
 function getHeroText(montant: string) {
   const h = new Date().getHours()
-  if (h >= 5 && h < 9)  return `T'es debout à cette heure-là et t'as ${montant} qui ne sont pas sur ton compte. Fais quelque chose.`
+  if (h >= 5 && h < 9) return `T'es debout à cette heure-là et t'as ${montant} qui ne sont pas sur ton compte. Fais quelque chose.`
   if (h >= 9 && h < 12) return `La matinée appartient aux courageux. ${montant} attendent que t'en sois un.`
-  if (h >= 12 && h < 14) return `Ton client mange bien. Lui il a pas payé mais il mange bien.`
+  if (h >= 12 && h < 14) return "Ton client mange bien. Lui il a pas payé mais il mange bien."
   if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} à aller chercher.`
-  if (h >= 18 && h < 23) return `Bilan de journée. T'as bougé combien aujourd'hui ?`
-  return `T'aurais mieux fait de rappeler plutôt que scroller.`
+  if (h >= 18 && h < 23) return "Bilan de journée. T'as bougé combien aujourd'hui ?"
+  return "T'aurais mieux fait de rappeler plutôt que scroller."
 }
 
 function contextLabel(joursRetard: number) {
   if (joursRetard > 200) return "Il a oublié ton existence. Rappelle-lui."
-  if (joursRetard > 90)  return "3 mois. Même ton ex a répondu plus vite."
-  if (joursRetard > 60)  return "Il espère que t'as perdu son numéro."
-  if (joursRetard > 30)  return "Encore chaud. Frappe maintenant."
+  if (joursRetard > 90) return "3 mois. Même ton ex a répondu plus vite."
+  if (joursRetard > 60) return "Il espère que t'as perdu son numéro."
+  if (joursRetard > 30) return "Encore chaud. Frappe maintenant."
   return "Tout frais. Un mail, une relance, c'est plié."
 }
 
 export default function DashboardClient({ dossiers: initialDossiers, rappels, stats }: Props) {
-  const [dossiers, setDossiers] = useState(initialDossiers)
+  const [dossiers] = useState(initialDossiers)
   const [showAll, setShowAll] = useState(false)
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
   const [scoreJour, setScoreJour] = useState(0)
@@ -58,7 +58,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   }, [])
 
   const urgences = useMemo(() =>
-    [...dossiers].filter(d => d.statut !== 'resolu').sort((a, b) => b.jours_retard - a.jours_retard),
+    [...dossiers].filter(d => d.statut !== "resolu").sort((a, b) => b.jours_retard - a.jours_retard),
     [dossiers]
   )
   const aQualifier = dossiers.filter(d => !d.contact).length
@@ -67,7 +67,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const montantFormate = formatMontant(stats.total_montant)
 
   async function markRappelDone(actionId: string) {
-    await supabase.from('actions').update({ rappel_fait: true }).eq('id', actionId)
+    await supabase.from("actions").update({ rappel_fait: true }).eq("id", actionId)
     setRappelsDismissed(prev => new Set(Array.from(prev).concat(actionId)))
     router.refresh()
   }
@@ -133,18 +133,18 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {streak === 2 && "2 jours de suite. Continue."}
             {streak >= 3 && streak < 7 && `${streak} jours de suite. T'as pris le pli.`}
             {streak >= 7 && streak < 14 && "7 jours. Tu deviens dangereux."}
-            {streak >= 14 && `${streak} jours sans lacher. Tes clients commencent a flipper.`}
+            {streak >= 14 && `${streak} jours sans lâcher. Tes clients commencent à flipper.`}
           </div>
         )}
         {streakBroken && streak === 0 && (
           <div className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
             <span>💤</span>
-            {"T'avais une belle serie. Elle t'attend."}
+            {"T'avais une belle série. Elle t'attend."}
           </div>
         )}
         {scoreJour === 0 && (
-          <div className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg px-3 py-1.5">
-            {stats.a_relancer} client{stats.a_relancer > 1 ? 's' : ''} n'attendent que toi
+          <div className="mt-2 inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg px-3 py-1.5">
+            {stats.a_relancer} client{stats.a_relancer > 1 ? "s" : ""} n'attendent que toi
           </div>
         )}
       </div>
@@ -158,7 +158,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             <div className="text-xs text-indigo-200 leading-snug mb-3">
               {aQualifier > 0
                 ? `${aQualifier} fantômes dans ta liste. Tu leur parles ou tu fais semblant ?`
-                : 'Qualifiés à 100%. Maintenant faut décrocher.'}
+                : "Qualifiés à 100%. Maintenant faut décrocher."}
             </div>
             <div className="text-xs font-semibold text-white bg-white/20 rounded-lg px-3 py-1.5 inline-block">
               C'est parti →
@@ -175,7 +175,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               : "Pas d'urgence. Ça va pas durer, profite."}
           </div>
           <div
-            onClick={() => document.getElementById('urgences')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => document.getElementById("urgences")?.scrollIntoView({ behavior: "smooth" })}
             className="text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg px-3 py-1.5 inline-block cursor-pointer"
           >
             Voir les urgences →
@@ -194,13 +194,13 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {rappelsVisible.map(rappel => (
               <div key={rappel.id} className="flex items-center gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
-                  {rappel.type === 'appel' ? '📞' : '✉️'}
+                  {rappel.type === "appel" ? "📞" : "✉️"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <Link href={`/dossiers/${rappel.dossier?.id}`} className="font-medium text-sm text-gray-900 truncate block hover:underline">
-                    {rappel.dossier?.societe || '—'}
+                    {rappel.dossier?.societe || "—"}
                   </Link>
-                  <div className="text-xs text-gray-500 truncate">{rappel.notes || 'Pas de note'}</div>
+                  <div className="text-xs text-gray-500 truncate">{rappel.notes || "Pas de note"}</div>
                 </div>
                 <button onClick={() => markRappelDone(rappel.id)} className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700 flex-shrink-0">
                   ✓ Fait
@@ -218,12 +218,11 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           <div className="flex-1 h-px bg-gray-100" />
           <span className="text-xs text-gray-400">{urgences.length} dossiers</span>
         </div>
-
         <div className="space-y-2">
           {displayed.map(dossier => (
             <div key={dossier.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
               <div className="flex items-center gap-3">
-                <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? 'bg-red-400' : dossier.jours_retard > 30 ? 'bg-orange-400' : 'bg-gray-200'}`} />
+                <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? "bg-red-400" : dossier.jours_retard > 30 ? "bg-orange-400" : "bg-gray-200"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <Link href={`/dossiers/${dossier.id}`} className="font-semibold text-sm text-gray-900 truncate hover:underline">
@@ -248,13 +247,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             </div>
           ))}
         </div>
-
         {urgences.length > 5 && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="w-full mt-3 py-2.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
           >
-            {showAll ? 'Voir moins' : `Voir les ${urgences.length - 5} autres →`}
+            {showAll ? "Voir moins" : `Voir les ${urgences.length - 5} autres →`}
           </button>
         )}
       </section>
@@ -270,11 +268,9 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               </div>
               <button onClick={() => setModalDossier(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => setModalType("appel")
-    setModalRappel("")}
+                onClick={() => setModalType("appel")}
                 className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${modalType === "appel" ? "bg-indigo-50 border-indigo-300 text-indigo-600" : "border-gray-200 text-gray-500"}`}
               >
                 📞 Appel
@@ -286,7 +282,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 ✉️ Email
               </button>
             </div>
-
             {modalType === "email" && (
               <div className="grid grid-cols-3 gap-2">
                 {(["cordial", "ferme", "mise_en_demeure"] as const).map(n => (
@@ -303,7 +298,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 ))}
               </div>
             )}
-
             <textarea
               value={modalNotes}
               onChange={e => setModalNotes(e.target.value)}
@@ -311,7 +305,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
               placeholder={modalType === "appel" ? "Il a dit quoi ? Promis quoi ? Inventé quoi ?" : "Le contexte, pour s'en souvenir dans 3 semaines."}
             />
-
             <div>
               <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider font-medium">Rappel (optionnel)</label>
               <input
@@ -321,7 +314,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
             </div>
-
             <div className="flex gap-2">
               <button onClick={() => setModalDossier(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">
                 Annuler
