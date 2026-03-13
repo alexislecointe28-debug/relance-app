@@ -38,6 +38,11 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [scoreJour, setScoreJour] = useState(0)
   const [streak, setStreak] = useState(0)
   const [streakBroken, setStreakBroken] = useState(false)
+  const [modalDossier, setModalDossier] = useState<(Dossier & { nb_factures: number }) | null>(null)
+  const [modalType, setModalType] = useState<"appel" | "email">("appel")
+  const [modalNotes, setModalNotes] = useState("")
+  const [modalNiveau, setModalNiveau] = useState("cordial")
+  const [modalLoading, setModalLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -66,21 +71,42 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     router.refresh()
   }
 
-  async function handleRelancer(dossierId: string) {
+  function incrementStreak() {
+    const today = new Date().toISOString().split("T")[0]
+    const lastDate = localStorage.getItem("relance_last_date")
+    const saved = parseInt(localStorage.getItem("relance_streak") || "0")
+    const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
+    const newStreak = diff <= 1 ? saved + 1 : 1
+    localStorage.setItem("relance_streak", String(newStreak))
+    localStorage.setItem("relance_last_date", today)
+    setStreak(newStreak)
+    setStreakBroken(false)
+  }
+
+  function handleRelancer(dossier: Dossier & { nb_factures: number }) {
+    setModalDossier(dossier)
+    setModalNotes("")
+    setModalNiveau("cordial")
+    setModalType("appel")
+  }
+
+  async function handleModalSave() {
+    if (!modalDossier) return
+    setModalLoading(true)
+    const { data: membre } = await supabase.from("membres").select("id").single()
+    await supabase.from("actions").insert({
+      dossier_id: modalDossier.id,
+      type: modalType,
+      niveau_email: modalType === "email" ? modalNiveau : null,
+      notes: modalNotes,
+      membre_id: membre?.id
+    })
     const newScore = scoreJour + 1
     setScoreJour(newScore)
-    if (newScore === 1) {
-      const today = new Date().toISOString().split("T")[0]
-      const lastDate = localStorage.getItem("relance_last_date")
-      const saved = parseInt(localStorage.getItem("relance_streak") || "0")
-      const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
-      const newStreak = diff <= 1 ? saved + 1 : 1
-      localStorage.setItem("relance_streak", String(newStreak))
-      localStorage.setItem("relance_last_date", today)
-      setStreak(newStreak)
-      setStreakBroken(false)
-    }
-    router.push(`/dossiers/${dossierId}`)
+    if (newScore === 1) incrementStreak()
+    setModalLoading(false)
+    setModalDossier(null)
+    router.refresh()
   }
 
   return (
@@ -210,7 +236,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   {getStatutDossierLabel(dossier.statut)}
                 </span>
                 <button
-                  onClick={() => handleRelancer(dossier.id)}
+                  onClick={() => handleRelancer(dossier)}
                   className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-3 py-1.5 transition-colors"
                 >
                   Relancer →
@@ -229,6 +255,70 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           </button>
         )}
       </section>
+
+      {/* Modal relancer 1 clic */}
+      {modalDossier && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-gray-900">{modalDossier.societe}</div>
+                <div className="text-xs text-gray-400">{modalDossier.jours_retard}j de retard · {formatMontant(modalDossier.montant_total)}</div>
+              </div>
+              <button onClick={() => setModalDossier(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setModalType("appel")}
+                className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${modalType === "appel" ? "bg-indigo-50 border-indigo-300 text-indigo-600" : "border-gray-200 text-gray-500"}`}
+              >
+                📞 Appel
+              </button>
+              <button
+                onClick={() => setModalType("email")}
+                className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${modalType === "email" ? "bg-indigo-50 border-indigo-300 text-indigo-600" : "border-gray-200 text-gray-500"}`}
+              >
+                ✉️ Email
+              </button>
+            </div>
+
+            {modalType === "email" && (
+              <div className="grid grid-cols-3 gap-2">
+                {(["cordial", "ferme", "mise_en_demeure"] as const).map(n => (
+                  <button key={n} onClick={() => setModalNiveau(n)}
+                    className={`py-2 rounded-xl border text-xs font-medium transition-all ${
+                      modalNiveau === n
+                        ? n === "mise_en_demeure" ? "bg-red-50 border-red-300 text-red-600"
+                          : n === "ferme" ? "bg-orange-50 border-orange-300 text-orange-600"
+                          : "bg-blue-50 border-blue-300 text-blue-600"
+                        : "border-gray-200 text-gray-500"
+                    }`}>
+                    {n === "cordial" ? "Cordial" : n === "ferme" ? "Ferme" : "Mise en demeure"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <textarea
+              value={modalNotes}
+              onChange={e => setModalNotes(e.target.value)}
+              rows={2}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder={modalType === "appel" ? "Il a dit quoi ? Promis quoi ? Inventé quoi ?" : "Le contexte, pour s'en souvenir dans 3 semaines."}
+            />
+
+            <div className="flex gap-2">
+              <button onClick={() => setModalDossier(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">
+                Annuler
+              </button>
+              <button onClick={handleModalSave} disabled={modalLoading} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white transition-colors">
+                {modalLoading ? "…" : "Noté →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
