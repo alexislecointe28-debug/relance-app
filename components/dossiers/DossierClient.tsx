@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Dossier, Facture, Action, Contact, StatutDossier, StatutFacture, ResultatAppel, NiveauEmail } from '@/types'
 import { formatMontant, formatDate, getStatutDossierLabel, getStatutDossierColor, getStatutFactureLabel, getStatutFactureColor, getResultatLabel, getNiveauEmailLabel, toDateString, addDays } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import confetti from 'canvas-confetti'
 
 interface Props {
   dossier: Dossier & {
@@ -26,6 +27,9 @@ export default function DossierClient({ dossier: initial }: Props) {
   async function updateStatut(statut: StatutDossier) {
     await supabase.from('dossiers').update({ statut }).eq('id', dossier.id)
     setDossier(prev => ({ ...prev, statut }))
+    if (statut === 'resolu') {
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] })
+    }
     router.refresh()
   }
 
