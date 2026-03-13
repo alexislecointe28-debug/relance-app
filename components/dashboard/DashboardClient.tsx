@@ -547,6 +547,9 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         />
       )}
 
+    </main>
+  )
+}
 
 // ---- Composant Modal Relancer réutilisable ----
 function ModalRelancer({
