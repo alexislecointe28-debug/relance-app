@@ -15,7 +15,7 @@ interface Props {
 
 function getHeroText(montant: string) {
   const h = new Date().getHours()
-  if (h >= 5 && h < 9)  return `T'es debout à cette heure-là et t'as ${montant} qui glèrent. Fais quelque chose.`
+  if (h >= 5 && h < 9)  return `T'es debout à cette heure-là et t'as ${montant} qui ne sont pas sur ton compte. Fais quelque chose.`
   if (h >= 9 && h < 12) return `La matinée appartient aux courageux. ${montant} attendent que t'en sois un.`
   if (h >= 12 && h < 14) return `Ton client mange bien. Lui il a pas payé mais il mange bien.`
   if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} à aller chercher.`
