@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Dossier, Facture, Action, Contact, StatutDossier, StatutFacture, ResultatAppel, NiveauEmail } from '@/types'
 import { formatMontant, formatDate, getStatutDossierLabel, getStatutDossierColor, getStatutFactureLabel, getStatutFactureColor, getResultatLabel, getNiveauEmailLabel, toDateString, addDays } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
-import confetti from 'canvas-confetti'
+declare const confetti: any
 
 interface Props {
   dossier: Dossier & {
