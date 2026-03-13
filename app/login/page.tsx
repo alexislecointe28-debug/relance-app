@@ -42,9 +42,9 @@ export default function LoginPage() {
                 <path d="M3 5h14M3 10h10M3 15h7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-gray-900">Relance</span>
+            <img src="/logo.png" alt="Paynelope" style={{ height: "48px", width: "220px", objectFit: "contain" }} />
           </div>
-          <p className="text-gray-500 text-sm">CRM de recouvrement pour TPE</p>
+          <p className="text-gray-500 text-sm">Rends l’argent.</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm animate-fade-in">
           <h1 className="text-lg font-semibold mb-6 text-gray-900">
