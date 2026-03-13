@@ -177,48 +177,27 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {dossiersFiltres.map(dossier => (
               <Link key={dossier.id} href={`/dossiers/${dossier.id}`}>
                 <div className="card-hover bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? 'bg-red-400' : dossier.jours_retard > 30 ? 'bg-orange-400' : 'bg-gray-200'}`} />
-
-                    <div className="flex-1 min-w-0">
-                      {/* Ligne 1 : société */}
-                      <div className="font-semibold text-sm text-gray-900 truncate">{dossier.societe}</div>
-                      {/* Ligne 2 : factures + retard */}
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-gray-400">
+                  <div className="flex gap-3">
+                    <div className={`w-1 rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? 'bg-red-400' : dossier.jours_retard > 30 ? 'bg-orange-400' : 'bg-gray-200'}`} />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      {/* Ligne 1 : société + montant */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-semibold text-sm text-gray-900 truncate">{dossier.societe}</div>
+                        <div className="font-bold text-sm text-gray-900 whitespace-nowrap">{formatMontant(dossier.montant_total)}</div>
+                      </div>
+                      {/* Ligne 2 : retard + badge */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs text-gray-400">
                           {dossier.nb_factures} facture{dossier.nb_factures > 1 ? 's' : ''}
+                          {dossier.jours_retard > 0 && (
+                            <span className={`ml-1 ${dossier.jours_retard > 60 ? 'text-red-500' : 'text-orange-500'}`}>• {dossier.jours_retard}j</span>
+                          )}
+                        </div>
+                        <span className={`badge text-xs flex-shrink-0 ${getStatutDossierColor(dossier.statut)}`}>
+                          {getStatutDossierLabel(dossier.statut)}
                         </span>
-                        {dossier.jours_retard > 0 && (
-                          <span className={`text-xs ${dossier.jours_retard > 60 ? 'text-red-500' : 'text-orange-500'}`}>
-                            • {dossier.jours_retard}j
-                          </span>
-                        )}
                       </div>
                     </div>
-
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <div className="font-bold text-sm montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
-                      <span className={`badge text-xs ${getStatutDossierColor(dossier.statut)}`}>
-                        {getStatutDossierLabel(dossier.statut)}
-                      </span>
-                    </div>
-                    <button
-                      onClick={(e) => handleDelete(e, dossier.id)}
-                      disabled={deletingId === dossier.id}
-                      className="hidden sm:flex p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-50"
-                      title="Supprimer ce dossier"
-                    >
-                      {deletingId === dossier.id ? (
-                        <span className="text-xs">…</span>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                        </svg>
-                      )}
-                    </button>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-300 flex-shrink-0 hidden sm:block">
-                      <path d="M9 18l6-6-6-6"/>
-                    </svg>
                   </div>
                 </div>
               </Link>
