@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
           {error && <div className="text-xs text-red-500">{error}</div>}
           <button type="submit" disabled={loading}
             className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
-            {loading ? '…' : 'Valider →'}
+            {loading ? '...' : 'Valider'}
           </button>
         </form>
       </div>
