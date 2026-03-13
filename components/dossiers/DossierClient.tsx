@@ -219,7 +219,14 @@ function TimelineItem({ action, onMarkDone }: { action: Action & { membre?: any 
             {action.resultat && <span className="ml-2 text-xs text-gray-500">· {getResultatLabel(action.resultat)}</span>}
             {action.niveau_email && <span className="ml-2 text-xs text-gray-500">· {getNiveauEmailLabel(action.niveau_email)}</span>}
           </div>
-          <span className="text-xs text-gray-400">{formatDate(action.created_at)}</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-gray-400">{formatDate(action.created_at)}</span>
+                {action.membre && (
+                  <span className="text-xs font-medium text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-md">
+                    {action.membre.prenom}
+                  </span>
+                )}
+              </div>
         </div>
         {action.notes && <p className="text-sm text-gray-700 mt-1">{action.notes}</p>}
         {action.rappel_le && !action.rappel_fait && (

@@ -9,7 +9,7 @@ export default async function DossierPage({ params }: { params: { id: string } }
   const supabase = createServerSupabaseClient()
   const { data: dossier } = await supabase
     .from('dossiers')
-    .select('*, factures(*), contact:contacts(*), actions(*)')
+    .select('*, factures(*), contact:contacts(*), actions(*, membre:membres(prenom, nom))')
     .eq('id', params.id)
     .single()
   if (!dossier) notFound()
