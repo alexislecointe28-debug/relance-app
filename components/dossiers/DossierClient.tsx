@@ -273,7 +273,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'C'est noté →'}
+            {loading ? '…' : 'Noté →'}
           </button>
         </div>
       </div>
@@ -322,7 +322,7 @@ function ModalEmail({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'C'est noté →'}
+            {loading ? '…' : 'Noté →'}
           </button>
         </div>
       </div>
@@ -369,7 +369,7 @@ function ModalContact({ dossierId, contact, onClose, onSaved }: { dossierId: str
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
           <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
-            {loading ? '…' : 'C'est noté →'}
+            {loading ? '…' : 'Noté →'}
           </button>
         </div>
       </div>
