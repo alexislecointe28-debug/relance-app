@@ -36,8 +36,20 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [showAll, setShowAll] = useState(false)
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
   const [scoreJour, setScoreJour] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [streakBroken, setStreakBroken] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0]
+    const lastDate = localStorage.getItem("relance_last_date")
+    const saved = parseInt(localStorage.getItem("relance_streak") || "0")
+    if (!lastDate) return
+    const diff = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000)
+    if (diff <= 1) setStreak(saved)
+    else { setStreakBroken(true); setStreak(0) }
+  }, [])
 
   const urgences = useMemo(() =>
     [...dossiers].filter(d => d.statut !== 'resolu').sort((a, b) => b.jours_retard - a.jours_retard),
@@ -55,7 +67,19 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   }
 
   async function handleRelancer(dossierId: string) {
-    setScoreJour(s => s + 1)
+    const newScore = scoreJour + 1
+    setScoreJour(newScore)
+    if (newScore === 1) {
+      const today = new Date().toISOString().split("T")[0]
+      const lastDate = localStorage.getItem("relance_last_date")
+      const saved = parseInt(localStorage.getItem("relance_streak") || "0")
+      const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
+      const newStreak = diff <= 1 ? saved + 1 : 1
+      localStorage.setItem("relance_streak", String(newStreak))
+      localStorage.setItem("relance_last_date", today)
+      setStreak(newStreak)
+      setStreakBroken(false)
+    }
     router.push(`/dossiers/${dossierId}`)
   }
 
@@ -71,6 +95,22 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
             <span>💪</span>
             {scoreJour === 1 ? "1 relance aujourd'hui. C'est un début." : `${scoreJour} relances aujourd'hui. T'es en feu.`}
+          </div>
+        )}
+        {streak > 0 && (
+          <div className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
+            <span>🔥</span>
+            {streak === 1 && "Jour 1. Tout le monde commence quelque part."}
+            {streak === 2 && "2 jours de suite. Continue."}
+            {streak >= 3 && streak < 7 && `${streak} jours de suite. T'as pris le pli.`}
+            {streak >= 7 && streak < 14 && "7 jours. Tu deviens dangereux."}
+            {streak >= 14 && `${streak} jours sans lacher. Tes clients commencent a flipper.`}
+          </div>
+        )}
+        {streakBroken && streak === 0 && (
+          <div className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+            <span>💤</span>
+            {"T'avais une belle serie. Elle t'attend."}
           </div>
         )}
         {scoreJour === 0 && (
