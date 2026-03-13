@@ -73,6 +73,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [skippedEnrich, setSkippedEnrich] = useState<Set<string>>(new Set())
   const [skippedRelance, setSkippedRelance] = useState<Set<string>>(new Set())
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
+  const [rappelsOpen, setRappelsOpen] = useState(false)
+  const [rappelsShowAll, setRappelsShowAll] = useState(false)
   const [scoreJour, setScoreJour] = useState(0)
   const [streak, setStreak] = useState(0)
   const [streakBroken, setStreakBroken] = useState(false)
@@ -281,29 +283,43 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         </div>
       </div>
 
-      {/* Rappels */}
+      {/* Rappels — collapsible */}
       {rappelsVisible.length > 0 && (
         <section>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rappels ({rappelsVisible.length})</h2>
-          </div>
-          <div className="space-y-2">
-            {rappelsVisible.map(rappel => (
-              <div key={rappel.id} className="flex items-center gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
-                  {rappel.type === 'appel' ? '📞' : '✉️'}
+          <button
+            onClick={() => setRappelsOpen(p => !p)}
+            className="w-full flex items-center gap-2 mb-2"
+          >
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Rappels ({rappelsVisible.length})
+            </h2>
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-xs text-gray-400">{rappelsOpen ? '▲ Réduire' : '▼ Voir'}</span>
+          </button>
+          {rappelsOpen && (
+            <div className="space-y-2">
+              {rappelsVisible.slice(0, rappelsShowAll ? undefined : 2).map(rappel => (
+                <div key={rappel.id} className="flex items-center gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
+                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
+                    {rappel.type === 'appel' ? '📞' : '✉️'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/dossiers/${rappel.dossier?.id}`} className="font-medium text-sm text-gray-900 truncate block hover:underline">
+                      {rappel.dossier?.societe || '—'}
+                    </Link>
+                    <div className="text-xs text-gray-500 truncate">{rappel.notes || 'Pas de note'}</div>
+                  </div>
+                  <button onClick={() => markRappelDone(rappel.id)} className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700">✓ Fait</button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <Link href={`/dossiers/${rappel.dossier?.id}`} className="font-medium text-sm text-gray-900 truncate block hover:underline">
-                    {rappel.dossier?.societe || '—'}
-                  </Link>
-                  <div className="text-xs text-gray-500 truncate">{rappel.notes || 'Pas de note'}</div>
-                </div>
-                <button onClick={() => markRappelDone(rappel.id)} className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700">✓ Fait</button>
-              </div>
-            ))}
-          </div>
+              ))}
+              {rappelsVisible.length > 2 && (
+                <button onClick={() => setRappelsShowAll(p => !p)} className="w-full text-xs text-gray-400 hover:text-indigo-500 py-1">
+                  {rappelsShowAll ? 'Voir moins' : `+ ${rappelsVisible.length - 2} autres rappels`}
+                </button>
+              )}
+            </div>
+          )}
         </section>
       )}
 
