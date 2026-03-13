@@ -11,6 +11,7 @@ const navLinks = [
   { href: '/qualifier', label: 'Qualifier' },
   { href: '/equipe', label: 'Équipe' },
   { href: '/import', label: 'Importer' },
+  { href: '/entreprise', label: 'Entreprise' },
   { href: '/parametres', label: 'Paramètres' },
 ]
 
