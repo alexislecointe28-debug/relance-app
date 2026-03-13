@@ -389,27 +389,19 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   </div>
 
                   {/* Actions */}
-                  <div className="mt-auto grid grid-cols-3 gap-2">
-                    <button
-                      onClick={() => openRelancer(current, 'appel')}
-                      className="flex flex-col items-center gap-1.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
+                  <div className="mt-auto grid grid-cols-2 gap-3">
+                    <Link
+                      href={`/qualifier?id=${current.id}`}
+                      onClick={e => e.stopPropagation()}
+                      className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 rounded-xl transition-all font-semibold text-sm"
                     >
-                      <span className="text-lg">📞</span>
-                      <span className="text-xs font-semibold">Appel</span>
-                    </button>
+                      <span className="text-lg">🎯</span> Enrichir
+                    </Link>
                     <button
-                      onClick={() => openRelancer(current, 'email')}
-                      className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl transition-colors"
+                      onClick={() => openRelancer(current)}
+                      className="flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors font-semibold text-sm shadow-sm"
                     >
-                      <span className="text-lg">✉️</span>
-                      <span className="text-xs font-semibold">Email</span>
-                    </button>
-                    <button
-                      onClick={skipCurrent}
-                      className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-400 rounded-xl transition-colors"
-                    >
-                      <span className="text-lg">⏭️</span>
-                      <span className="text-xs font-semibold">Passer</span>
+                      <span className="text-lg">⚡</span> Relancer
                     </button>
                   </div>
                 </div>
