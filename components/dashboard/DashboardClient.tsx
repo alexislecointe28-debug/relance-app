@@ -66,7 +66,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+    <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -176,7 +176,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           <div className="grid gap-2">
             {dossiersFiltres.map(dossier => (
               <Link key={dossier.id} href={`/dossiers/${dossier.id}`}>
-                <div className="card-hover bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="card-hover bg-white border border-gray-200 rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
                   <div className="flex gap-3">
                     <div className={`w-1 rounded-full flex-shrink-0 ${dossier.jours_retard > 60 ? 'bg-red-400' : dossier.jours_retard > 30 ? 'bg-orange-400' : 'bg-gray-200'}`} />
                     <div className="flex-1 min-w-0 space-y-1">
