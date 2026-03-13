@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dossiers', label: 'Dossiers' },
   { href: '/agenda', label: 'Agenda' },
   { href: '/qualifier', label: 'Qualifier' },
   { href: '/equipe', label: 'Équipe' },
