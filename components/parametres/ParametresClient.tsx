@@ -45,7 +45,7 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
     setPwdError('')
     setPwdSaved(false)
     if (newPwd !== confirmPwd) { setPwdError('Les mots de passe ne correspondent pas.'); return }
-    if (newPwd.length < 8) { setPwdError('8 caract\u00e8res minimum.'); return }
+    if (newPwd.length < 8) { setPwdError('8 caractères minimum.'); return }
     setPwdLoading(true)
     const { error } = await supabase.auth.updateUser({ password: newPwd })
     if (error) setPwdError(error.message)
@@ -61,8 +61,8 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
   return (
     <main className="max-w-xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Param\u00e8tres</h1>
-        <p className="text-sm text-gray-400">{org?.nom} \u00b7 {membre?.role}</p>
+        <h1 className="text-xl font-bold text-gray-900">Paramètres</h1>
+        <p className="text-sm text-gray-400">{org?.nom} · {membre?.role}</p>
       </div>
 
       {/* Profil */}
@@ -71,7 +71,7 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
         <form onSubmit={handleProfile} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Pr\u00e9nom</label>
+              <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Prénom</label>
               <input value={prenom} onChange={e => setPrenom(e.target.value)}
                 placeholder="Alexis"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
@@ -93,7 +93,7 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
               {profileLoading ? '...' : 'Enregistrer'}
             </button>
-            {profileSaved && <span className="text-sm text-emerald-600">Profil mis \u00e0 jour</span>}
+            {profileSaved && <span className="text-sm text-emerald-600">Profil mis à jour</span>}
           </div>
         </form>
       </div>
@@ -105,13 +105,13 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
           <div>
             <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Nouveau mot de passe</label>
             <input type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} required
-              placeholder="8 caract\u00e8res minimum"
+              placeholder="8 caractères minimum"
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Confirmer</label>
             <input type="password" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} required
-              placeholder="M\u00eame chose"
+              placeholder="Même chose"
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
           </div>
           {pwdError && <p className="text-xs text-red-500">{pwdError}</p>}
@@ -120,7 +120,7 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors">
               {pwdLoading ? '...' : 'Modifier'}
             </button>
-            {pwdSaved && <span className="text-sm text-emerald-600">Mot de passe modifi\u00e9</span>}
+            {pwdSaved && <span className="text-sm text-emerald-600">Mot de passe modifié</span>}
           </div>
         </form>
       </div>
