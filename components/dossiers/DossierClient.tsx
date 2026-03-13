@@ -52,7 +52,7 @@ export default function DossierClient({ dossier: initial }: Props) {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
         <Link href="/dashboard" className="hover:text-gray-700">Tableau de bord</Link>
@@ -61,7 +61,7 @@ export default function DossierClient({ dossier: initial }: Props) {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{dossier.societe}</h1>
@@ -85,25 +85,25 @@ export default function DossierClient({ dossier: initial }: Props) {
             <option value="resolu">Résolu</option>
           </select>
         </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
+        <div className="sm:text-right">
+          <div className="text-2xl sm:text-3xl font-bold montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
           <div className="text-sm text-gray-400">{dossier.factures?.length || 0} facture(s)</div>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-3 mb-8">
-        <button onClick={() => setModal('appel')} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
+      <div className="flex gap-3 mb-6 sm:mb-8">
+        <button onClick={() => setModal('appel')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium">
           <span>📞</span> Noter un appel
         </button>
-        <button onClick={() => setModal('email')} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium">
+        <button onClick={() => setModal('email')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium">
           <span>✉️</span> Envoyer un mail
         </button>
       </div>
 
       {/* 2-column layout */}
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
 
           {/* Factures */}
           <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
@@ -112,7 +112,7 @@ export default function DossierClient({ dossier: initial }: Props) {
             </div>
             <div className="divide-y divide-gray-100">
               {dossier.factures?.map(facture => (
-                <div key={facture.id} className="px-5 py-3 flex items-center gap-4">
+                <div key={facture.id} className="px-4 py-3 flex items-center gap-3 flex-wrap sm:flex-nowrap">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900">{facture.numero || 'N/A'}</div>
                     <div className="text-xs text-gray-400">
@@ -154,8 +154,8 @@ export default function DossierClient({ dossier: initial }: Props) {
         </div>
 
         {/* Contact */}
-        <div>
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-20 shadow-sm">
+        <div className="order-1 lg:order-2">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 lg:sticky lg:top-20 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-sm text-gray-900">Contact comptabilité</h2>
               <button onClick={() => setModal('contact')} className="text-xs text-blue-600 hover:text-blue-700">
