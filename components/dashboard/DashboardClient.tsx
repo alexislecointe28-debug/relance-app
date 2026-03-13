@@ -189,6 +189,18 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     setSwiping(false)
   }
 
+
+  // Flèches clavier desktop
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (!current || modalDossier) return
+      if (e.key === 'ArrowLeft') skipCurrent()
+      if (e.key === 'ArrowRight') openRelancer(current)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [current, modalDossier, skipped])
+
   const colors = current ? urgenceColor(current.jours_retard) : null
 
   return (
@@ -292,9 +304,25 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             <div className="text-sm text-gray-400">Ou presque. Mais on va faire semblant que c'est bien.</div>
           </div>
         ) : (
-          <div className="relative" style={{ height: '280px' }}>
+          <div className="relative sm:mx-14" style={{ height: '280px' }}>
 
-            {/* Carte suivante (derrière) */}
+            {/* Boutons desktop gauche/droite */}
+        <button
+          onClick={skipCurrent}
+          className="hidden sm:flex absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all z-10"
+          title="Passer (←)"
+        >
+          ←
+        </button>
+        <button
+          onClick={() => current && openRelancer(current)}
+          className="hidden sm:flex absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-indigo-600 shadow-sm text-white hover:bg-indigo-700 hover:shadow-md transition-all z-10"
+          title="Relancer (→)"
+        >
+          →
+        </button>
+
+        {/* Carte suivante (derrière) */}
             {next && (
               <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl shadow-sm opacity-60 scale-95 pointer-events-none" style={{ height: '260px' }} />
             )}
