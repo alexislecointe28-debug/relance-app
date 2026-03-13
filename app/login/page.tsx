@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -64,6 +65,7 @@ export default function LoginPage() {
               {loading ? 'Chargement…' : mode === 'login' ? 'Se connecter' : 'Créer le compte'}
             </button>
           </form>
+          <Link href='/forgot-password' className='block text-center text-xs text-gray-400 hover:text-indigo-600 mt-2'>Mot de passe oublié ?</Link>
           <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-4 text-sm text-gray-500 hover:text-gray-900 text-center">
             {mode === 'login' ? "Pas de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
           </button>
