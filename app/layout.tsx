@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false },
   title: 'Paynelope',
-  description: 'Rends l'argent.',
+  description: "Rends l’argent.",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
