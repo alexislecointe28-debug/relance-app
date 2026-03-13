@@ -119,7 +119,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   }, [])
 
   const toEnrich = useMemo(() =>
-    [...dossiers].filter(d => !d.contact && !skippedEnrich.has(d.id))
+    [...dossiers].filter(d => !d.contact && d.statut !== 'resolu' && !skippedEnrich.has(d.id))
       .sort((a, b) => b.montant_total - a.montant_total),
     [dossiers, skippedEnrich]
   )
