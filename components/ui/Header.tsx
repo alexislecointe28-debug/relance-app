@@ -30,7 +30,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-          <img src="/logo.png" alt="Paynelope" className="h-10 w-auto" />
+          <img src="/logo.png" alt="Paynelope" className="h-14 w-auto" />
         </Link>
 
         {/* Nav desktop seulement */}
