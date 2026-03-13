@@ -299,7 +299,7 @@ function ModalEmail({ dossierId, contactEmail, montantTotal, onClose, onSaved }:
   const TEXTES: Record<NiveauEmail, string> = {
     cordial: `Madame, Monsieur,
 
-Sauf erreur de notre part, nous constatons qu'une facture d'un montant de ${montantTotal.toFixed(2)} € reste à ce jour impayée.
+Sauf erreur de notre part, nous constatons qu'une facture d'un montant de ${String(montantTotal.toFixed(2))} € reste à ce jour impayée.
 
 Nous vous serions reconnaissants de bien vouloir procéder au règlement de cette somme dans les meilleurs délais.
 
@@ -308,7 +308,7 @@ Si ce règlement a déjà été effectué, veuillez ne pas tenir compte de ce me
 Cordialement,`,
     ferme: `Madame, Monsieur,
 
-Malgré notre précédent rappel, nous constatons que la somme de ${montantTotal.toFixed(2)} € n'a toujours pas été réglée.
+Malgré notre précédent rappel, nous constatons que la somme de ${String(montantTotal.toFixed(2))} € n'a toujours pas été réglée.
 
 Nous vous mettons en demeure de procéder au paiement de cette somme dans un délai de 8 jours à compter de la réception du présent courrier.
 
@@ -317,7 +317,7 @@ Nous vous mettons en demeure de procéder au paiement de cette somme dans un dé
 Cordialement,`,
     mise_en_demeure: `Madame, Monsieur,
 
-En l'absence de règlement de votre part, et après plusieurs relances restées sans suite, nous vous adressons la présente mise en demeure de régler la somme de ${montantTotal.toFixed(2)} € dans un délai de 48 heures.
+En l'absence de règlement de votre part, et après plusieurs relances restées sans suite, nous vous adressons la présente mise en demeure de régler la somme de ${String(montantTotal.toFixed(2))} € dans un délai de 48 heures.
 
 Passé ce délai, nous engagerons sans préavis supplémentaire une procédure judiciaire de recouvrement, dont les frais vous seront intégralement imputés.`,
   }
@@ -342,14 +342,13 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
       return
     }
     const membreRes = await supabase.from('membres').select('id').single()
-    const { data } = await supabase.from('actions').insert({
+    await supabase.from('actions').insert({
       dossier_id: dossierId, type: 'email', niveau_email: niveau,
       notes: (notes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
       membre_id: membreRes.data?.id
     }).select().single()
     setSending(false)
     setSent(true)
-    if (data) onSaved(data as Action)
     setTimeout(() => onClose(), 1200)
   }
 
@@ -362,7 +361,7 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
             <input type="email" value={emailDest} onChange={e => setEmailDest(e.target.value)}
               placeholder="client@entreprise.fr"
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email de contact — remplis le champ ou va dans le contact.</p>}
+            {!emailDest && <p className="text-xs text-amber-500 mt-1">Aucun email — remplis le champ ou ajoute un contact.</p>}
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Niveau</label>
@@ -394,13 +393,14 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span>À :</span><span className="font-medium text-gray-700">{emailDest}</span>
+          <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2">
+            <span>À :</span>
+            <span className="font-medium text-gray-700">{emailDest}</span>
             <button onClick={() => setStep('compose')} className="ml-auto text-indigo-600 hover:underline text-xs">Modifier</button>
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Contenu — éditable</label>
-            <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={10}
+            <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={11}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none leading-relaxed" />
           </div>
           {sendError && <p className="text-xs text-red-500">{sendError}</p>}
