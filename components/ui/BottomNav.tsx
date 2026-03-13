@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navLinks = [
-  { href: '/dashboard', label: 'Dossiers', icon: (
+  { href: '/dossiers', label: 'Dossiers', icon: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>
   )},
   { href: '/qualifier', label: 'Qualifier', icon: (
