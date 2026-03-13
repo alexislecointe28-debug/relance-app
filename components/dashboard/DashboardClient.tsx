@@ -43,6 +43,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [modalNotes, setModalNotes] = useState("")
   const [modalNiveau, setModalNiveau] = useState("cordial")
   const [modalLoading, setModalLoading] = useState(false)
+  const [modalRappel, setModalRappel] = useState("")
   const router = useRouter()
   const supabase = createClient()
 
@@ -88,6 +89,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     setModalNotes("")
     setModalNiveau("cordial")
     setModalType("appel")
+    setModalRappel("")
   }
 
   async function handleModalSave() {
@@ -99,7 +101,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       type: modalType,
       niveau_email: modalType === "email" ? modalNiveau : null,
       notes: modalNotes,
-      membre_id: membre?.id
+      membre_id: membre?.id,
+      rappel_at: modalRappel || null
     })
     const newScore = scoreJour + 1
     setScoreJour(newScore)
@@ -270,7 +273,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => setModalType("appel")}
+                onClick={() => setModalType("appel")
+    setModalRappel("")}
                 className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${modalType === "appel" ? "bg-indigo-50 border-indigo-300 text-indigo-600" : "border-gray-200 text-gray-500"}`}
               >
                 📞 Appel
@@ -307,6 +311,16 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
               placeholder={modalType === "appel" ? "Il a dit quoi ? Promis quoi ? Inventé quoi ?" : "Le contexte, pour s'en souvenir dans 3 semaines."}
             />
+
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider font-medium">Rappel (optionnel)</label>
+              <input
+                type="datetime-local"
+                value={modalRappel}
+                onChange={e => setModalRappel(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+            </div>
 
             <div className="flex gap-2">
               <button onClick={() => setModalDossier(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600">
