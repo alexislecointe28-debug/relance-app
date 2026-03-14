@@ -189,7 +189,7 @@ export default function ImportClient() {
             />
           )}
 
-          {step === 'upload' && mode === 'csv' && (
+          {step === 'upload' && mode === 'pdf' && (
             <UploadZone
               loading={loading}
               accept=".csv,.tsv,.txt"
