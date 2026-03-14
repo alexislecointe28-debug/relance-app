@@ -111,6 +111,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
   // Mode enrichir inline
   const [enrichMode, setEnrichMode] = useState(false)
+  const [scriptModal, setScriptModal] = useState<{ type: 'enrichir' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string } | null>(null)
   const [enrichForm, setEnrichForm] = useState({ prenom: '', nom: '', email: '', telephone: '', fonction: '' })
   const [enrichLoading, setEnrichLoading] = useState(false)
 
@@ -410,15 +411,21 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                       <div className="text-sm text-gray-600 font-medium">Qui tu vas harceler chez {currentEnrich.societe} ?</div>
                       <div className="text-xs text-gray-400 mt-1">Sans contact, pas de relance. Simple.</div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
-                      <button onClick={skipEnrich}
-                        className="flex items-center justify-center gap-2 py-3.5 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-400 rounded-xl font-semibold text-sm transition-all">
-                        ⏭️ Passer
+                    <div className="mt-auto space-y-2">
+                      <button onClick={() => setScriptModal({ type: 'enrichir', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
+                        className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
+                        📜 Script d'appel
                       </button>
-                      <button onClick={() => setEnrichMode(true)}
-                        className="flex items-center justify-center gap-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-sm transition-colors">
-                        🎯 Enrichir
-                      </button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button onClick={skipEnrich}
+                          className="flex items-center justify-center gap-2 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-400 rounded-xl font-semibold text-sm transition-all">
+                          ⏭️ Passer
+                        </button>
+                        <button onClick={() => setEnrichMode(true)}
+                          className="flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-sm transition-colors">
+                          🎯 Enrichir
+                        </button>
+                      </div>
                     </div>
                   </>
                 ) : (
@@ -530,19 +537,25 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                     "{getMotivation(currentRelance.id)}"
                   </p>
                 </div>
-                <div className="mt-auto grid grid-cols-3 gap-2">
-                  <button onClick={() => openRelancer(currentRelance, 'appel')}
-                    className="flex flex-col items-center gap-1.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors">
-                    <span className="text-lg">📞</span><span className="text-xs font-semibold">Appel</span>
+                <div className="mt-auto space-y-2">
+                  <button onClick={() => setScriptModal({ type: 'relancer', societe: currentRelance.societe, montant: currentRelance.montant_total, jours: currentRelance.jours_retard, statut: currentRelance.statut, contact: currentRelance.contact ? currentRelance.contact.prenom + ' ' + currentRelance.contact.nom : undefined })}
+                    className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
+                    📜 Script d'appel
                   </button>
-                  <button onClick={() => openRelancer(currentRelance, 'email')}
-                    className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl transition-colors">
-                    <span className="text-lg">✉️</span><span className="text-xs font-semibold">Email</span>
-                  </button>
-                  <button onClick={skipRelance}
-                    className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-400 rounded-xl transition-colors">
-                    <span className="text-lg">⏭️</span><span className="text-xs font-semibold">Passer</span>
-                  </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button onClick={() => openRelancer(currentRelance, 'appel')}
+                      className="flex flex-col items-center gap-1.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors">
+                      <span className="text-lg">📞</span><span className="text-xs font-semibold">Appel</span>
+                    </button>
+                    <button onClick={() => openRelancer(currentRelance, 'email')}
+                      className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl transition-colors">
+                      <span className="text-lg">✉️</span><span className="text-xs font-semibold">Email</span>
+                    </button>
+                    <button onClick={skipRelance}
+                      className="flex flex-col items-center gap-1.5 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-400 rounded-xl transition-colors">
+                      <span className="text-lg">⏭️</span><span className="text-xs font-semibold">Passer</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -558,6 +571,11 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} passé{skippedEnrich.size > 1 ? 's' : ''} (enrichir)</button>}
         {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
       </div>
+
+      {/* Modal script */}
+      {scriptModal && (
+        <ModalScript data={scriptModal} onClose={() => setScriptModal(null)} />
+      )}
 
       {/* Modal relancer */}
       {modalDossier && (
@@ -806,6 +824,93 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
           </>
         )}
 
+      </div>
+    </div>
+  )
+}
+
+
+// ---- Modal Script d'appel ----
+function ModalScript({ data, onClose }: {
+  data: { type: 'enrichir' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string }
+  onClose: () => void
+}) {
+  const [scriptIdx, setScriptIdx] = useState(0)
+
+  const montantStr = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(data.montant)
+  const contact = data.contact || 'le/la responsable comptable'
+
+  const SCRIPTS_ENRICHIR = [
+    {
+      label: 'Standard',
+      texte: `Bonjour, je cherche la personne qui gère les règlements fournisseurs chez ${data.societe}, vous pouvez me la passer ? C'est de la part de [votre prénom], merci.`,
+    },
+    {
+      label: 'Si standard répond',
+      texte: `Bonjour, je m'appelle [votre prénom], je cherche à joindre le ou la responsable comptabilité fournisseurs. Nous avons une facture en attente de règlement de ${montantStr} et j'aimerais comprendre où ça en est. Pouvez-vous m'indiquer à qui je dois m'adresser ?`,
+    },
+    {
+      label: 'Si résistance',
+      texte: `Je comprends tout à fait, mais il s'agit d'une facture de ${montantStr} avec ${data.jours} jours de retard. Il m'est difficile de laisser ça sans interlocuteur direct. Pouvez-vous au moins me donner un email ou un nom ? Je ne voudrais pas être contraint d'envoyer un courrier recommandé à l'aveugle.`,
+    },
+  ]
+
+  const SCRIPTS_RELANCER = [
+    {
+      label: '1er appel',
+      texte: `Bonjour ${contact}, c'est [votre prénom]. Je vous contacte au sujet d'une facture de ${montantStr} qui arrive à ${data.jours} jours de retard. Je voulais m'assurer qu'elle n'était pas passée entre les mailles. Vous avez un aperçu de la situation de votre côté ?`,
+    },
+    {
+      label: 'Après promesse non tenue',
+      texte: `Bonjour ${contact}, c'est [votre prénom]. Lors de notre dernier échange vous m'aviez indiqué que le règlement de ${montantStr} serait fait rapidement. On est maintenant à ${data.jours} jours de retard et je n'ai rien reçu. Qu'est-ce qui s'est passé ?`,
+    },
+    {
+      label: 'Après email ignoré',
+      texte: `Bonjour ${contact}, je vous ai envoyé un email il y a quelques jours concernant la facture de ${montantStr} — je ne suis pas sûr qu'il soit arrivé. Je préfère vous appeler directement. Quelle est la situation de votre côté ?`,
+    },
+    {
+      label: '+90 jours / Ferme',
+      texte: `Bonjour ${contact}, c'est [votre prénom]. Je vous appelle au sujet de la facture de ${montantStr} qui accuse maintenant ${data.jours} jours de retard. Malgré plusieurs relances, je n'ai reçu aucun paiement ni engagement ferme. Je dois vous informer que sans retour de votre part sous 48h, nous allons engager une procédure de recouvrement. Je préfère vous en avertir directement.`,
+    },
+  ]
+
+  const scripts = data.type === 'enrichir' ? SCRIPTS_ENRICHIR : SCRIPTS_RELANCER
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
+          <div>
+            <div className="font-bold text-gray-900">📜 Script d'appel</div>
+            <div className="text-xs text-gray-400">{data.societe} · {montantStr}</div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 px-5 pt-3 overflow-x-auto">
+          {scripts.map((s, i) => (
+            <button key={i} onClick={() => setScriptIdx(i)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${scriptIdx === i ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Script */}
+        <div className="p-5">
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <p className="text-sm text-gray-700 leading-relaxed">{scripts[scriptIdx].texte}</p>
+          </div>
+          <p className="text-xs text-gray-400 mt-3 text-center">Lis à voix haute · Adapte avec ton naturel</p>
+        </div>
+
+        <div className="px-5 pb-5">
+          <button onClick={onClose}
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold">
+            C'est parti →
+          </button>
+        </div>
       </div>
     </div>
   )
