@@ -67,6 +67,9 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-    </div>
+      <p className="text-center text-xs text-gray-300 mt-4">
+    <a href="/legal" className="hover:text-gray-500 transition-colors">CGU & Mentions légales</a>
+  </p>
+</div>
   )
 }

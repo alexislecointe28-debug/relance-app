@@ -1,11 +1,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import Header from '@/components/ui/Header'
+import Header, { DemoBanner } from '@/components/ui/Header'
 import DashboardClient from '@/components/dashboard/DashboardClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const supabase = createServerSupabaseClient()
+
+  const { data: org } = await supabase.from('organisations').select('plan').single()
+  const plan = org?.plan || 'demo'
 
   const { data: dossiers } = await supabase
     .from('dossiers')
@@ -41,6 +44,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-canvas">
       <Header />
+      <DemoBanner plan={plan} />
       <DashboardClient
         dossiers={dossiersWithCount as any}
         rappels={(rappels || []) as any}

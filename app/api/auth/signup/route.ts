@@ -49,5 +49,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erreur création membre' }, { status: 500 })
   }
 
+  // Email de bienvenue (non bloquant)
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email/welcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nom_organisation }),
+    })
+  } catch {}
+
   return NextResponse.json({ success: true })
 }
