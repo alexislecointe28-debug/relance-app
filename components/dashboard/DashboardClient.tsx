@@ -20,7 +20,7 @@ function getHeroText(montant: string) {
   if (h >= 12 && h < 14) return "Ton client mange bien. Lui il a pas payé mais il mange bien."
   if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} à aller chercher.`
   if (h >= 18 && h < 23) return "Bilan de journée. T'as bougé combien aujourd'hui ?"
-  return "T'aurais mieux fait de rappeler plut\u00f4t que scroller."
+  return "T'aurais mieux fait de rappeler plutôt que scroller."
 }
 
 function contextLabel(joursRetard: number) {
@@ -242,7 +242,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     })
     if (modalStatut) {
       await supabase.from('dossiers').update({ statut: modalStatut }).eq('id', modalDossier.id)
-      const labels: Record<string, string> = { resolu: 'Dossier résolu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: '\u00c0 relancer' }
+      const labels: Record<string, string> = { resolu: 'Dossier résolu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: 'À relancer' }
       await supabase.from('actions').insert({ dossier_id: modalDossier.id, type: 'note', notes: 'Statut mis à jour : ' + labels[modalStatut], membre_id: membre?.id })
       if (modalStatut === 'resolu') {
         const s = document.createElement('script')
@@ -299,7 +299,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               <span>🔥</span>
               {streak < 3 && `${streak} jour${streak > 1 ? 's' : ''} de suite.`}
               {streak >= 3 && streak < 7 && `${streak} jours. T'as pris le pli.`}
-              {streak >= 7 && `${streak} jours sans l\u00e2cher.`}
+              {streak >= 7 && `${streak} jours sans lâcher.`}
             </div>
           )}
           {scoreJour === 0 && (

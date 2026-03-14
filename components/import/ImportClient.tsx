@@ -105,7 +105,15 @@ export default function ImportClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ factures: toImport })
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Erreur serveur' }))
+        if (errorData.error === 'LIMITE_DEMO') {
+          setError('🔒 Plan Démo limité à 3 dossiers. Passez au plan Solo sur /pricing pour continuer.')
+          setLoading(false)
+          return
+        }
+        throw new Error(errorData.message || 'Erreur serveur')
+      }
       const result = await res.json()
       setImportResult({ imported: result.imported, skipped: result.skipped })
       setStep('success')
