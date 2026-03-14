@@ -455,9 +455,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   </div>
                 )}
               </div>
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <div className="text-xs text-gray-300 select-none">← passer · enrichir →</div>
-              </div>
+
             </div>
           </>
         )}
@@ -543,9 +541,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   </button>
                 </div>
               </div>
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <div className="text-xs text-gray-300 select-none">← passer · relancer →</div>
-              </div>
+
             </div>
           </>
         )}
