@@ -45,25 +45,25 @@ function CardStack({
 }) {
   return (
     <section>
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-3">
         <span className="text-base">{emoji}</span>
         <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</h2>
         <div className="flex-1 h-px bg-gray-100" />
         <span className="text-xs text-gray-400">{count}</span>
       </div>
-      <div className="relative" style={{ height: '300px' }}>
-        {onPrev && (
-          <button onClick={onPrev}
-            className="hidden absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all z-10"
-            title={labelLeft}>←</button>
-        )}
-        {onNext && (
-          <button onClick={onNext}
-            className={`hidden absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full ${color} shadow-sm text-white hover:shadow-md transition-all z-10`}
-            title={labelRight}>→</button>
-        )}
+      <div className="relative" style={{ height: '420px' }}>
         {children}
       </div>
+      {(onPrev || onNext) && (
+        <div className="flex gap-2 mt-3 justify-center">
+          <button onClick={onPrev} disabled={!onPrev}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all disabled:opacity-30"
+            title={labelLeft}>←</button>
+          <button onClick={onNext} disabled={!onNext}
+            className={`w-10 h-10 flex items-center justify-center rounded-full ${color} shadow-sm text-white hover:shadow-md transition-all disabled:opacity-30`}
+            title={labelRight}>→</button>
+        </div>
+      )}
     </section>
   )
 }
