@@ -86,7 +86,7 @@ export default function TimerFloat() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-24 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end gap-2">
 
       {/* Panel */}
       {open && (
@@ -157,19 +157,25 @@ export default function TimerFloat() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
+        className={`rounded-2xl shadow-lg flex items-center gap-2 px-3 py-2 transition-all ${
           running ? 'bg-indigo-600 hover:bg-indigo-700' : finished ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-white hover:bg-gray-50 border border-gray-200'
         }`}
       >
         {running ? (
-          <span className="text-white text-xs font-bold font-mono">{pad(minutes)}:{pad(seconds)}</span>
+          <>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span className="text-white text-xs font-bold font-mono">{pad(minutes)}:{pad(seconds)}</span>
+          </>
         ) : finished ? (
-          <span className="text-white text-lg">✅</span>
+          <>
+            <span className="text-white text-sm">✅</span>
+            <span className="text-white text-xs font-semibold">Terminé !</span>
+          </>
         ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={running ? 'white' : '#6366F1'} strokeWidth="2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
+          <>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span className="text-indigo-600 text-xs font-semibold">Pomodoro</span>
+          </>
         )}
       </button>
     </div>

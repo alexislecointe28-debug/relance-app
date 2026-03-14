@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
 import { detectSeparator, detectColumns, parseAmount, formatMontant } from '@/lib/utils'
 
-type Mode = 'excel' | 'csv' | 'manual'
+type Mode = 'excel' | 'pdf' | 'manual'
 
 interface ParsedFacture {
   societe: string
@@ -154,7 +154,7 @@ export default function ImportClient() {
             <div className="flex gap-2 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
               {([
                 { id: 'excel', label: '📊 Excel', desc: 'Recommandé' },
-                { id: 'csv', label: '📄 CSV', desc: '' },
+                { id: 'pdf', label: '📄 PDF', desc: '' },
                 { id: 'manual', label: '✏️ Manuel', desc: '' },
               ] as { id: Mode; label: string; desc: string }[]).map(m => (
                 <button key={m.id} onClick={() => setMode(m.id)}
@@ -167,6 +167,17 @@ export default function ImportClient() {
           )}
 
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+
+          {step === 'upload' && mode === 'pdf' && (
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center">
+              <div className="text-4xl mb-3">📄</div>
+              <div className="font-semibold text-gray-900 mb-2">Import PDF</div>
+              <div className="text-sm text-gray-400 mb-4">Glissez votre facture PDF ici</div>
+              <div className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 inline-block">
+                🚧 Fonctionnalité en cours de développement — disponible prochainement
+              </div>
+            </div>
+          )}
 
           {step === 'upload' && mode === 'excel' && (
             <UploadZone

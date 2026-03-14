@@ -323,6 +323,9 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         </section>
       )}
 
+      {/* === 2 PILES CÔTE À CÔTE DESKTOP === */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
       {/* === PILE ENRICHIR === */}
       <CardStack
         title={toEnrich.length > 0 ? `${toEnrich.length} \u00e0 enrichir` : 'Tous enrichis 🎉'}
@@ -519,6 +522,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           </>
         )}
       </CardStack>
+
+      </div>{/* fin grid 2 colonnes */}
 
       {/* Liens reset */}
       <div className="flex justify-center gap-6 text-xs text-gray-300">
