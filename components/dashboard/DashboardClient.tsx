@@ -37,6 +37,25 @@ function urgenceColor(j: number) {
   return { bar: 'bg-yellow-400', badge: 'bg-yellow-50 text-yellow-600 border-yellow-200', glow: 'shadow-yellow-100' }
 }
 
+
+const MOTIVATIONS = [
+  "Allez, décroche. Le pire qu'il peut dire c'est non.",
+  "T'as peur de quoi ? Il te doit de l'argent, pas l'inverse.",
+  "Un appel de 2 minutes peut régler 3 mois de retard.",
+  "Il attend que tu lâches. Prouve-lui que t'es pas du genre.",
+  "Son silence c'est pas un non. C'est un 'rappelle-moi'.",
+  "La gêne dure 30 secondes. L'argent dure plus longtemps.",
+  "Il a pas oublié. Il espère que toi oui.",
+  "Ferme les yeux, respire, décroche.",
+  "Le meilleur moment c'était hier. Le 2e meilleur c'est maintenant.",
+  "T'as géré pire que ça. Go.",
+]
+
+function getMotivation(id: string) {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return MOTIVATIONS[hash % MOTIVATIONS.length]
+}
+
 function CardStack({
   title, emoji, color, count, children, onPrev, onNext, labelLeft, labelRight
 }: {
@@ -492,13 +511,18 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 <div className="h-1.5 bg-gray-100 rounded-full mb-3 overflow-hidden">
                   <div className={`h-full rounded-full ${colorsR.bar}`} style={{ width: `${Math.min(100, (currentRelance.jours_retard / 180) * 100)}%` }} />
                 </div>
-                <div className="mb-3 flex items-center gap-2">
+                <div className="mb-3 flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${getStatutDossierColor(currentRelance.statut)}`}>
                     {getStatutDossierLabel(currentRelance.statut)}
                   </span>
                   {currentRelance.contact && (
                     <span className="text-xs text-gray-400">👤 {currentRelance.contact.prenom} {currentRelance.contact.nom}</span>
                   )}
+                </div>
+                <div className="flex-1 flex items-center justify-center px-2">
+                  <p className="text-sm text-gray-500 text-center italic leading-snug">
+                    "{getMotivation(currentRelance.id)}"
+                  </p>
                 </div>
                 <div className="mt-auto grid grid-cols-3 gap-2">
                   <button onClick={() => openRelancer(currentRelance, 'appel')}
