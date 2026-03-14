@@ -91,6 +91,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [dossiers, setDossiers] = useState(initialDossiers)
   const [skippedEnrich, setSkippedEnrich] = useState<Set<string>>(new Set())
   const [skippedRelance, setSkippedRelance] = useState<Set<string>>(new Set())
+  const [enrichIdx, setEnrichIdx] = useState(0)
+  const [relanceIdx, setRelanceIdx] = useState(0)
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
   const [rappelsOpen, setRappelsOpen] = useState(false)
   const [rappelsShowAll, setRappelsShowAll] = useState(false)
@@ -150,10 +152,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     [dossiers, skippedRelance]
   )
 
-  const currentEnrich = toEnrich[0] || null
-  const nextEnrich = toEnrich[1] || null
-  const currentRelance = toRelance[0] || null
-  const nextRelance = toRelance[1] || null
+  const safeEnrichIdx = Math.min(enrichIdx, Math.max(0, toEnrich.length - 1))
+  const currentEnrich = toEnrich[safeEnrichIdx] || null
+  const nextEnrich = toEnrich[safeEnrichIdx + 1] || null
+  const safeRelanceIdx = Math.min(relanceIdx, Math.max(0, toRelance.length - 1))
+  const currentRelance = toRelance[safeRelanceIdx] || null
+  const nextRelance = toRelance[safeRelanceIdx + 1] || null
   const rappelsVisible = rappels.filter(r => !rappelsDismissed.has(r.id))
   const montantFormate = formatMontant(stats.total_montant)
 
@@ -349,9 +353,9 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       <CardStack
         title={toEnrich.length > 0 ? `${toEnrich.length} \u00e0 enrichir` : 'Tous enrichis 🎉'}
         emoji="🎯" color="bg-indigo-600" count={toEnrich.length}
-        onPrev={currentEnrich ? skipEnrich : undefined}
-        onNext={currentEnrich && !enrichMode ? () => setEnrichMode(true) : undefined}
-        labelLeft="Passer" labelRight="Enrichir"
+        onPrev={enrichIdx > 0 ? () => setEnrichIdx(i => i - 1) : undefined}
+        onNext={enrichIdx < toEnrich.length - 1 ? () => setEnrichIdx(i => i + 1) : undefined}
+        labelLeft="Précédent" labelRight="Suivant"
       >
         {toEnrich.length === 0 ? (
           <div className="absolute inset-0 bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-sm">
@@ -463,9 +467,9 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       <CardStack
         title={toRelance.length > 0 ? `${toRelance.length} \u00e0 relancer` : 'File vide 🏆'}
         emoji="⚡" color="bg-indigo-600" count={toRelance.length}
-        onPrev={currentRelance ? skipRelance : undefined}
-        onNext={currentRelance ? () => openRelancer(currentRelance) : undefined}
-        labelLeft="Passer" labelRight="Relancer"
+        onPrev={relanceIdx > 0 ? () => setRelanceIdx(i => i - 1) : undefined}
+        onNext={relanceIdx < toRelance.length - 1 ? () => setRelanceIdx(i => i + 1) : undefined}
+        labelLeft="Précédent" labelRight="Suivant"
       >
         {toRelance.length === 0 ? (
           <div className="absolute inset-0 bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-sm">
