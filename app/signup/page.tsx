@@ -23,7 +23,7 @@ export default function SignupPage() {
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || "Erreur lors de l'inscription."); setLoading(false); return }
-    router.push('/login?signup=success')
+    router.push('/onboarding')
   }
 
   return (

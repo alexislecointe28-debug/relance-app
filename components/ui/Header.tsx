@@ -11,6 +11,7 @@ const navLinks = [
   { href: '/equipe', label: 'Équipe' },
   { href: '/import', label: 'Importer' },
   { href: '/entreprise', label: 'Entreprise' },
+  { href: '/parrainage', label: '🎁 Parrainage' },
   { href: '/parametres', label: 'Paramètres' },
 ]
 

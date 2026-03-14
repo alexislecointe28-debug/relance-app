@@ -56,6 +56,34 @@ function getMotivation(id: string) {
   return MOTIVATIONS[hash % MOTIVATIONS.length]
 }
 
+
+// ---- Badges ----
+const BADGES = [
+  { id: 'first_relance', emoji: '🚀', label: '1ère relance', desc: 'Tu as osé.', condition: (score: number) => score >= 1 },
+  { id: 'streak_3', emoji: '🔥', label: '3 jours de suite', desc: 'La régularité paie.', condition: (_: number, streak: number) => streak >= 3 },
+  { id: 'streak_7', emoji: '⚡', label: '7 jours de suite', desc: 'Tu es dangereux.', condition: (_: number, streak: number) => streak >= 7 },
+  { id: 'score_10', emoji: '💪', label: '10 relances', desc: 'En route.', condition: (score: number) => score >= 10 },
+  { id: 'score_50', emoji: '🏆', label: '50 relances', desc: 'Professionnel.', condition: (score: number) => score >= 50 },
+]
+
+function BadgesList({ scoreTotal, streak }: { scoreTotal: number, streak: number }) {
+  const unlocked = BADGES.filter(b => b.condition(scoreTotal, streak))
+  if (unlocked.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-2">
+      {unlocked.map(b => (
+        <div key={b.id} className="flex items-center gap-1.5 bg-white border border-yellow-200 rounded-xl px-3 py-1.5 shadow-sm animate-fade-in">
+          <span className="text-lg">{b.emoji}</span>
+          <div>
+            <div className="text-xs font-bold text-gray-900">{b.label}</div>
+            <div className="text-xs text-gray-400">{b.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function CardStack({
   title, emoji, color, count, children, onPrev, onNext, labelLeft, labelRight
 }: {
@@ -97,6 +125,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [rappelsOpen, setRappelsOpen] = useState(false)
   const [rappelsShowAll, setRappelsShowAll] = useState(false)
   const [scoreJour, setScoreJour] = useState(0)
+  const [scoreTotal, setScoreTotal] = useState(0)
+  const OBJECTIF_HEBDO = 10
   const [streak, setStreak] = useState(0)
   const [streakBroken, setStreakBroken] = useState(false)
 
@@ -134,7 +164,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
   useEffect(() => {
     async function loadStreak() {
-      const { data: membre } = await supabase.from('membres').select('streak, streak_last_date').single()
+      const { data: membre } = await supabase.from('membres').select('streak, streak_last_date, score_total').single()
       if (!membre) return
       const today = new Date().toISOString().split('T')[0]
       const lastDate = membre.streak_last_date
@@ -142,6 +172,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       const diff = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000)
       if (diff <= 1) setStreak(membre.streak || 0)
       else { setStreakBroken(true); setStreak(0) }
+      setScoreTotal(membre.score_total || 0)
     }
     loadStreak()
   }, [])
@@ -173,7 +204,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     const lastDate = membre.streak_last_date
     const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
     const newStreak = diff <= 1 ? (membre.streak || 0) + 1 : 1
-    await supabase.from('membres').update({ streak: newStreak, streak_last_date: today }).eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+    await supabase.from('membres').update({ streak: newStreak, streak_last_date: today, score_total: (membre.score_total || 0) + 1 }).eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+    setScoreTotal(prev => prev + 1)
     setStreak(newStreak)
     setStreakBroken(false)
   }
@@ -285,7 +317,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     <main className="max-w-2xl mx-auto px-3 sm:px-6 py-6 space-y-6">
 
       {/* Hero */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm card-hover">
         <div className="text-sm text-gray-400 mb-1">Ton argent qui dort</div>
         <div className="text-4xl font-bold text-gray-900 mb-3">{montantFormate}</div>
         <div className="text-sm text-gray-600 mb-4 leading-snug">{getHeroText(montantFormate)}</div>
@@ -309,7 +341,30 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             </div>
           )}
         </div>
+
+        {/* Objectif hebdo */}
+        <div className="w-full mt-1">
+          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+            <span>Objectif semaine</span>
+            <span className="font-semibold text-gray-700">{Math.min(scoreJour, OBJECTIF_HEBDO)}/{OBJECTIF_HEBDO} relances</span>
+          </div>
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${Math.min(100, (scoreJour / OBJECTIF_HEBDO) * 100)}%`,
+                background: scoreJour >= OBJECTIF_HEBDO ? '#10B981' : '#6366F1'
+              }}
+            />
+          </div>
+          {scoreJour >= OBJECTIF_HEBDO && (
+            <div className="text-xs text-emerald-600 font-semibold mt-1">🎉 Objectif atteint cette semaine !</div>
+          )}
+        </div>
       </div>
+
+      {/* Badges */}
+      {scoreTotal > 0 && <BadgesList scoreTotal={scoreTotal} streak={streak} />}
 
       {/* Rappels — collapsible */}
       {rappelsVisible.length > 0 && (
@@ -386,7 +441,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
                 touchAction: 'pan-y',
               }}
-              className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none"
+              className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
             >
               {swipeXE > 30 && <div className="absolute top-4 left-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">🎯 ENRICHIR</div>}
               {swipeXE < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg]">PASSER →</div>}

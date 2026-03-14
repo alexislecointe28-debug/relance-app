@@ -63,6 +63,11 @@ export default async function AdminPage() {
   const totalOrgs = orgsWithStats.length
   const totalMontant = orgsWithStats.reduce((sum, o) => sum + o.total_montant, 0)
   const totalDossiers = orgsWithStats.reduce((sum, o) => sum + o.nb_dossiers, 0)
+  
+  // MRR estimé
+  const PLAN_PRIX: Record<string, number> = { demo: 0, solo: 49, agence: 199 }
+  const mrr = orgsWithStats.reduce((sum, o) => sum + (PLAN_PRIX[o.plan || 'demo'] || 0), 0)
+  const payants = orgsWithStats.filter(o => o.plan && o.plan !== 'demo').length
 
   function formatMontant(n: number) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
@@ -90,9 +95,10 @@ export default async function AdminPage() {
       </div>
 
       {/* Stats globales */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Organisations', value: totalOrgs, icon: '🏢' },
+          { label: 'MRR', value: formatMontant(mrr), icon: '💳', sub: `${payants} client${payants > 1 ? 's' : ''} payant${payants > 1 ? 's' : ''}` },
           { label: 'Total en jeu', value: formatMontant(totalMontant), icon: '💰' },
           { label: 'Dossiers actifs', value: totalDossiers, icon: '📁' },
         ].map(s => (
@@ -100,6 +106,7 @@ export default async function AdminPage() {
             <div className="text-2xl mb-2">{s.icon}</div>
             <div className="text-2xl font-bold text-gray-900">{s.value}</div>
             <div className="text-xs text-gray-400 mt-0.5">{s.label}</div>
+            {'sub' in s && s.sub && <div className="text-xs text-indigo-500 font-medium mt-0.5">{(s as any).sub}</div>}
           </div>
         ))}
       </div>
@@ -117,8 +124,13 @@ export default async function AdminPage() {
               <div key={org.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-gray-900">{org.nom}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        org.plan === 'agence' ? 'bg-purple-100 text-purple-700' :
+                        org.plan === 'solo' ? 'bg-indigo-100 text-indigo-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>{org.plan || 'demo'}</span>
                       {isInactive && org.nb_dossiers > 0 && (
                         <span className="text-xs bg-red-50 text-red-500 border border-red-100 rounded-full px-2 py-0.5">
                           Inactif {lastActivity ? `${lastActivity}j` : ''}

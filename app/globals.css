@@ -15,7 +15,7 @@ html, body {
 }
 
 body {
-  background-color: #F5F6FA;
+  background-color: #F5F7FF;
   color: #0F1117;
   font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
@@ -89,4 +89,58 @@ button, a, select, input, textarea { transition: all 0.15s ease; }
 .montant-display {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* === Micro-animations === */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1.5s ease-in-out infinite;
+}
+
+/* === Canvas === */
+.bg-canvas { background-color: #F5F7FF; }
+
+/* === Cards avec hover effect === */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
+}
+
+/* === Gradient indigo subtil === */
+.gradient-indigo {
+  background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
 }
