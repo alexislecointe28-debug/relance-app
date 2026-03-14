@@ -843,15 +843,19 @@ function ModalScript({ data, onClose }: {
   const SCRIPTS_ENRICHIR = [
     {
       label: 'Standard',
-      texte: `Bonjour, je cherche la personne qui gère les règlements fournisseurs chez ${data.societe}, vous pouvez me la passer ? C'est de la part de [votre prénom], merci.`,
+      texte: `Bonjour, je cherche la personne en charge de la comptabilité fournisseurs chez ${data.societe}. Vous pouvez me la passer ou me donner son nom ? C'est de la part de [votre prénom], merci.`,
     },
     {
-      label: 'Si standard répond',
-      texte: `Bonjour, je m'appelle [votre prénom], je cherche à joindre le ou la responsable comptabilité fournisseurs. Nous avons une facture en attente de règlement de ${montantStr} et j'aimerais comprendre où ça en est. Pouvez-vous m'indiquer à qui je dois m'adresser ?`,
+      label: 'Si on demande pourquoi',
+      texte: `Je suis fournisseur de ${data.societe} et j'ai besoin de l'adresse email ou du numéro direct de votre service comptabilité pour leur transmettre un document. C'est pour une simple mise à jour administrative de notre côté.`,
     },
     {
-      label: 'Si résistance',
-      texte: `Je comprends tout à fait, mais il s'agit d'une facture de ${montantStr} avec ${data.jours} jours de retard. Il m'est difficile de laisser ça sans interlocuteur direct. Pouvez-vous au moins me donner un email ou un nom ? Je ne voudrais pas être contraint d'envoyer un courrier recommandé à l'aveugle.`,
+      label: 'Si on propose un email générique',
+      texte: `Je préfère avoir un contact direct si possible — les emails génériques sont souvent traités avec délai. Vous avez le nom ou le direct de la personne en charge ? Juste un prénom suffit, je trouverai le reste.`,
+    },
+    {
+      label: 'Si vraiment bloqué',
+      texte: `Pas de souci, je vais envoyer un courrier au siège alors. Pour que ça arrive au bon service, c'est bien à l'attention de la comptabilité fournisseurs de ${data.societe} ? Je veux juste m'assurer que ça ne se perd pas.`,
     },
   ]
 
