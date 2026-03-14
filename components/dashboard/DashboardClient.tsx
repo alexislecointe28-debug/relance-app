@@ -132,13 +132,17 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const supabase = createClient()
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
-    const lastDate = localStorage.getItem('relance_last_date')
-    const saved = parseInt(localStorage.getItem('relance_streak') || '0')
-    if (!lastDate) return
-    const diff = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000)
-    if (diff <= 1) setStreak(saved)
-    else { setStreakBroken(true); setStreak(0) }
+    async function loadStreak() {
+      const { data: membre } = await supabase.from('membres').select('streak, streak_last_date').single()
+      if (!membre) return
+      const today = new Date().toISOString().split('T')[0]
+      const lastDate = membre.streak_last_date
+      if (!lastDate) { setStreak(0); return }
+      const diff = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000)
+      if (diff <= 1) setStreak(membre.streak || 0)
+      else { setStreakBroken(true); setStreak(0) }
+    }
+    loadStreak()
   }, [])
 
   const toEnrich = useMemo(() =>
@@ -161,14 +165,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const rappelsVisible = rappels.filter(r => !rappelsDismissed.has(r.id))
   const montantFormate = formatMontant(stats.total_montant)
 
-  function incrementStreak() {
+  async function incrementStreak() {
     const today = new Date().toISOString().split('T')[0]
-    const lastDate = localStorage.getItem('relance_last_date')
-    const saved = parseInt(localStorage.getItem('relance_streak') || '0')
+    const { data: membre } = await supabase.from('membres').select('streak, streak_last_date').single()
+    if (!membre) return
+    const lastDate = membre.streak_last_date
     const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
-    const newStreak = diff <= 1 ? saved + 1 : 1
-    localStorage.setItem('relance_streak', String(newStreak))
-    localStorage.setItem('relance_last_date', today)
+    const newStreak = diff <= 1 ? (membre.streak || 0) + 1 : 1
+    await supabase.from('membres').update({ streak: newStreak, streak_last_date: today }).eq('user_id', (await supabase.auth.getUser()).data.user?.id)
     setStreak(newStreak)
     setStreakBroken(false)
   }
