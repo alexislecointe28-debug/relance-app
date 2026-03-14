@@ -51,15 +51,15 @@ function CardStack({
         <div className="flex-1 h-px bg-gray-100" />
         <span className="text-xs text-gray-400">{count}</span>
       </div>
-      <div className={`relative sm:mx-14`} style={{ height: '300px' }}>
+      <div className="relative" style={{ height: '300px' }}>
         {onPrev && (
           <button onClick={onPrev}
-            className="hidden sm:flex absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all z-10"
+            className="hidden absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all z-10"
             title={labelLeft}>←</button>
         )}
         {onNext && (
           <button onClick={onNext}
-            className={`hidden sm:flex absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full ${color} shadow-sm text-white hover:shadow-md transition-all z-10`}
+            className={`hidden absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full ${color} shadow-sm text-white hover:shadow-md transition-all z-10`}
             title={labelRight}>→</button>
         )}
         {children}
