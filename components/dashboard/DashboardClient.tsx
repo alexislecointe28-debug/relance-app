@@ -15,20 +15,20 @@ interface Props {
 
 function getHeroText(montant: string) {
   const h = new Date().getHours()
-  if (h >= 5 && h < 9) return `T'es debout \u00e0 cette heure-l\u00e0 et t'as ${montant} qui ne sont pas sur ton compte. Fais quelque chose.`
-  if (h >= 9 && h < 12) return `La matin\u00e9e appartient aux courageux. ${montant} attendent que t'en sois un.`
-  if (h >= 12 && h < 14) return "Ton client mange bien. Lui il a pas pay\u00e9 mais il mange bien."
-  if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} \u00e0 aller chercher.`
-  if (h >= 18 && h < 23) return "Bilan de journ\u00e9e. T'as boug\u00e9 combien aujourd'hui ?"
+  if (h >= 5 && h < 9) return `T'es debout à cette heure-là et t'as ${montant} qui ne sont pas sur ton compte. Fais quelque chose.`
+  if (h >= 9 && h < 12) return `La matinée appartient aux courageux. ${montant} attendent que t'en sois un.`
+  if (h >= 12 && h < 14) return "Ton client mange bien. Lui il a pas payé mais il mange bien."
+  if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} à aller chercher.`
+  if (h >= 18 && h < 23) return "Bilan de journée. T'as bougé combien aujourd'hui ?"
   return "T'aurais mieux fait de rappeler plut\u00f4t que scroller."
 }
 
 function contextLabel(joursRetard: number) {
-  if (joursRetard > 200) return "Il a oubli\u00e9 ton existence. Rappelle-lui."
-  if (joursRetard > 90) return "3 mois. M\u00eame ton ex a r\u00e9pondu plus vite."
-  if (joursRetard > 60) return "Il esp\u00e8re que t'as perdu son num\u00e9ro."
+  if (joursRetard > 200) return "Il a oublié ton existence. Rappelle-lui."
+  if (joursRetard > 90) return "3 mois. Même ton ex a répondu plus vite."
+  if (joursRetard > 60) return "Il espère que t'as perdu son numéro."
   if (joursRetard > 30) return "Encore chaud. Frappe maintenant."
-  return "Tout frais. Un mail, une relance, c'est pli\u00e9."
+  return "Tout frais. Un mail, une relance, c'est plié."
 }
 
 function urgenceColor(j: number) {
@@ -238,8 +238,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     })
     if (modalStatut) {
       await supabase.from('dossiers').update({ statut: modalStatut }).eq('id', modalDossier.id)
-      const labels: Record<string, string> = { resolu: 'Dossier r\u00e9solu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: '\u00c0 relancer' }
-      await supabase.from('actions').insert({ dossier_id: modalDossier.id, type: 'note', notes: 'Statut mis \u00e0 jour : ' + labels[modalStatut], membre_id: membre?.id })
+      const labels: Record<string, string> = { resolu: 'Dossier résolu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: '\u00c0 relancer' }
+      await supabase.from('actions').insert({ dossier_id: modalDossier.id, type: 'note', notes: 'Statut mis à jour : ' + labels[modalStatut], membre_id: membre?.id })
       if (modalStatut === 'resolu') {
         const s = document.createElement('script')
         s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js'
@@ -287,7 +287,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         <div className="flex flex-wrap gap-2">
           {scoreJour > 0 && (
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
-              <span>💪</span>{scoreJour === 1 ? "1 relance aujourd'hui. C'est un d\u00e9but." : `${scoreJour} relances. T'es en feu.`}
+              <span>💪</span>{scoreJour === 1 ? "1 relance aujourd'hui. C'est un début." : `${scoreJour} relances. T'es en feu.`}
             </div>
           )}
           {streak > 0 && (
@@ -351,7 +351,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* === PILE ENRICHIR === */}
       <CardStack
-        title={toEnrich.length > 0 ? `${toEnrich.length} \u00e0 enrichir` : 'Tous enrichis 🎉'}
+        title={toEnrich.length > 0 ? `${toEnrich.length} à enrichir` : 'Tous enrichis 🎉'}
         emoji="🎯" color="bg-indigo-600" count={toEnrich.length}
         onPrev={enrichIdx > 0 ? () => setEnrichIdx(i => i - 1) : undefined}
         onNext={enrichIdx < toEnrich.length - 1 ? () => setEnrichIdx(i => i + 1) : undefined}
@@ -421,7 +421,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   <div className="flex-1 flex flex-col gap-2 overflow-auto">
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { key: 'prenom', label: 'Pr\u00e9nom', placeholder: 'Marie' },
+                        { key: 'prenom', label: 'Prénom', placeholder: 'Marie' },
                         { key: 'nom', label: 'Nom', placeholder: 'Dupont' },
                       ].map(f => (
                         <div key={f.key}>
@@ -434,7 +434,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                     </div>
                     {[
                       { key: 'email', label: 'Email', placeholder: 'marie@entreprise.fr', type: 'email' },
-                      { key: 'telephone', label: 'T\u00e9l', placeholder: '06 00 00 00 00', type: 'tel' },
+                      { key: 'telephone', label: 'Tél', placeholder: '06 00 00 00 00', type: 'tel' },
                       { key: 'fonction', label: 'Fonction', placeholder: 'DAF, PDG...', type: 'text' },
                     ].map(f => (
                       <div key={f.key}>
@@ -463,7 +463,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* === PILE RELANCER === */}
       <CardStack
-        title={toRelance.length > 0 ? `${toRelance.length} \u00e0 relancer` : 'File vide 🏆'}
+        title={toRelance.length > 0 ? `${toRelance.length} à relancer` : 'File vide 🏆'}
         emoji="⚡" color="bg-indigo-600" count={toRelance.length}
         onPrev={relanceIdx > 0 ? () => setRelanceIdx(i => i - 1) : undefined}
         onNext={relanceIdx < toRelance.length - 1 ? () => setRelanceIdx(i => i + 1) : undefined}
@@ -472,7 +472,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         {toRelance.length === 0 ? (
           <div className="absolute inset-0 bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-sm">
             <div className="text-4xl mb-3">🏆</div>
-            <div className="font-semibold text-gray-900">File vide. T'as tout trait\u00e9.</div>
+            <div className="font-semibold text-gray-900">File vide. T'as tout traité.</div>
             <div className="text-sm text-gray-400 mt-1">Ou presque. Mais on va faire semblant que c'est bien.</div>
           </div>
         ) : currentRelance && colorsR && (
@@ -551,8 +551,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* Liens reset */}
       <div className="flex justify-center gap-6 text-xs text-gray-300">
-        {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} pass\u00e9{skippedEnrich.size > 1 ? 's' : ''} (enrichir)</button>}
-        {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} pass\u00e9{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
+        {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} passé{skippedEnrich.size > 1 ? 's' : ''} (enrichir)</button>}
+        {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
       </div>
 
       {/* Modal relancer */}
