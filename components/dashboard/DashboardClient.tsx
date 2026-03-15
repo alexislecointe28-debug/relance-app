@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
+import SwipeableCard from './SwipeableCard'
 import Link from 'next/link'
 import { Dossier, Action, StatutDossier } from '@/types'
 import { formatMontant, getStatutDossierLabel, getStatutDossierColor } from '@/lib/utils'
@@ -495,21 +496,17 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         ) : currentEnrich && (
           <>
             {nextEnrich && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
-            <div
-              ref={cardRefE}
-              onTouchStart={e => { startXE.current = e.touches[0].clientX; setSwipingE(true) }}
-              onTouchEnd={() => {
-                if (Math.abs(swipeXE) > 80) { if (swipeDirE === 'left') skipEnrich(); else setEnrichMode(true) }
-                else { setSwipeXE(0); setSwipeDirE(null) }
-                setSwipingE(false)
-              }}
+            <SwipeableCard
+              disabled={enrichMode}
+              onSwipeLeft={skipEnrich}
+              onSwipeRight={() => setEnrichMode(true)}
+              onSwipeX={dx => { setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left'); setSwipingE(dx !== 0) }}
               style={{
                 transform: exitingE
                   ? `translateX(${swipeDirE === 'right' ? '110%' : '-110%'}) rotate(${swipeDirE === 'right' ? '8deg' : '-8deg'})`
                   : enrichMode ? 'none'
                   : `translateX(${swipeXE}px) rotate(${swipeXE * 0.04}deg)`,
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
-                touchAction: enrichMode ? 'pan-y' : 'none',
               }}
               className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
             >
@@ -598,7 +595,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 )}
               </div>
 
-            </div>
+            </SwipeableCard>
           </>
         )}
       </CardStack>
@@ -620,20 +617,15 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         ) : currentRelance && colorsR && (
           <>
             {nextRelance && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
-            <div
-              ref={cardRefR}
-              onTouchStart={e => { startXR.current = e.touches[0].clientX; setSwipingR(true) }}
-              onTouchEnd={() => {
-                if (Math.abs(swipeXR) > 80) { if (swipeDirR === 'left') skipRelance(); else openRelancer(currentRelance) }
-                else { setSwipeXR(0); setSwipeDirR(null) }
-                setSwipingR(false)
-              }}
+            <SwipeableCard
+              onSwipeLeft={skipRelance}
+              onSwipeRight={() => openRelancer(currentRelance)}
+              onSwipeX={dx => { setSwipeXR(dx); setSwipeDirR(dx > 0 ? 'right' : 'left'); setSwipingR(dx !== 0) }}
               style={{
                 transform: exitingR
                   ? `translateX(${swipeDirR === 'right' ? '110%' : '-110%'}) rotate(${swipeDirR === 'right' ? '8deg' : '-8deg'})`
                   : `translateX(${swipeXR}px) rotate(${swipeXR * 0.04}deg)`,
                 transition: exitingR || (!swipingR && swipeXR !== 0) ? 'transform 0.3s ease' : 'none',
-                touchAction: 'none',
               }}
               className={`absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg ${colorsR.glow} cursor-grab active:cursor-grabbing select-none`}
             >
@@ -696,7 +688,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 </div>
               </div>
 
-            </div>
+            </SwipeableCard>
           </>
         )}
       </CardStack>
