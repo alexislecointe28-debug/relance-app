@@ -1185,16 +1185,16 @@ function FeedRow({ item }: { item: FeedItem }) {
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group">
+    <Link href={`/dossiers/${item.dossier?.id}`} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
       <span className="text-base w-5 text-center shrink-0">{icons[item.type] || '•'}</span>
       <div className="flex-1 min-w-0">
-        <span className="text-xs font-semibold text-gray-700">{item.dossier?.societe || '—'}</span>
+        <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">{item.dossier?.societe || '—'}</span>
         <span className="text-xs text-gray-400 ml-1.5">{labels[item.type]}</span>
         {item.notes && (
           <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
         )}
       </div>
       <span className="text-xs text-gray-300 shrink-0">{timeAgo(item.created_at)}</span>
-    </div>
+    </Link>
   )
 }
