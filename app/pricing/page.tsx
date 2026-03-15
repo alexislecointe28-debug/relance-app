@@ -55,6 +55,11 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4">
       <div className="max-w-5xl mx-auto">
+        <div className="flex items-center mb-8">
+          <Link href="/dashboard" className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors">
+            ← Retour au dashboard
+          </Link>
+        </div>
         <div className="text-center mb-12">
           <img src="/logo.png" alt="Paynelope" className="h-12 w-auto mx-auto mb-6" style={{ objectFit: 'contain' }} />
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Simple. Transparent. Efficace.</h1>
