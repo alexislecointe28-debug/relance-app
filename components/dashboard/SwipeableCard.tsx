@@ -31,26 +31,58 @@ export default function SwipeableCard({
     // Délai avant le hint pour laisser la carte s'afficher
     const t1 = setTimeout(() => {
       setShowHintLabel(true)
-      // Aller à droite
+
+      const REPEATS = 3
+      const STEP = 1.5
+      const INTERVAL = 12
+      const MAX = 40
+
+      let rep = 0
       let x = 0
-      const step = 2
-      const interval = setInterval(() => {
-        x += step
-        setHintOffset(x)
-        if (x >= 40) {
-          clearInterval(interval)
-          // Revenir
-          const back = setInterval(() => {
-            x -= step
-            setHintOffset(x)
-            if (x <= 0) {
-              clearInterval(back)
-              setHintOffset(0)
+      let goingRight = true
+
+      const run = setInterval(() => {
+        if (goingRight) {
+          x += STEP
+          setHintOffset(x)
+          if (x >= MAX) goingRight = false
+        } else {
+          x -= STEP
+          setHintOffset(x)
+          if (x <= 0) {
+            setHintOffset(0)
+            rep++
+            if (rep >= REPEATS) {
+              clearInterval(run)
               setShowHintLabel(false)
+            } else {
+              // Pause entre les répétitions
+              clearInterval(run)
+              setTimeout(() => {
+                goingRight = true
+                const resume = setInterval(() => {
+                  if (goingRight) {
+                    x += STEP
+                    setHintOffset(x)
+                    if (x >= MAX) goingRight = false
+                  } else {
+                    x -= STEP
+                    setHintOffset(x)
+                    if (x <= 0) {
+                      setHintOffset(0)
+                      rep++
+                      if (rep >= REPEATS) {
+                        clearInterval(resume)
+                        setShowHintLabel(false)
+                      }
+                    }
+                  }
+                }, INTERVAL)
+              }, 400)
             }
-          }, 8)
+          }
         }
-      }, 8)
+      }, INTERVAL)
     }, 800)
 
     return () => clearTimeout(t1)
