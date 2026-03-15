@@ -499,7 +499,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             <SwipeableCard
               disabled={enrichMode}
               onSwipeLeft={skipEnrich}
-              onSwipeRight={() => setEnrichMode(true)}
+              onSwipeRight={() => { setSwipeXE(0); setSwipeDirE(null); setSwipingE(false); setEnrichMode(true) }}
               onSwipeX={dx => { setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left'); setSwipingE(dx !== 0) }}
               style={{
                 transform: exitingE
