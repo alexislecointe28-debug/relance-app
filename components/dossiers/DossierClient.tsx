@@ -21,18 +21,32 @@ type Modal = 'appel' | 'email' | 'contact' | null
 export default function DossierClient({ dossier: initial }: Props) {
   const [dossier, setDossier] = useState(initial)
   const [modal, setModal] = useState<Modal>(null)
+  const [pendingStatut, setPendingStatut] = useState<StatutDossier | null>(null)
+  const [savingStatut, setSavingStatut] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
-  async function updateStatut(statut: StatutDossier) {
+  function loadConfetti(cb: () => void) {
+    if (typeof confetti !== 'undefined') { cb(); return }
+    const s = document.createElement('script')
+    s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js'
+    s.onload = cb
+    document.head.appendChild(s)
+  }
+
+  async function confirmStatut() {
+    if (!pendingStatut) return
+    setSavingStatut(true)
+    const statut = pendingStatut
     await supabase.from('dossiers').update({ statut }).eq('id', dossier.id)
     setDossier(prev => ({ ...prev, statut }))
     const labels: Record<string, string> = { resolu: 'Dossier résolu', promesse: 'Promesse de paiement', en_attente: 'En attente', a_relancer: 'À relancer' }
     const { data: membre } = await supabase.from('membres').select('id').single()
     await supabase.from('actions').insert({ dossier_id: dossier.id, type: 'note', notes: 'Statut mis à jour : ' + labels[statut], membre_id: membre?.id })
-    router.refresh()
+    setPendingStatut(null)
+    setSavingStatut(false)
     if (statut === 'resolu') {
-      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] })
+      loadConfetti(() => confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] }))
     }
     router.refresh()
   }
@@ -82,9 +96,10 @@ export default function DossierClient({ dossier: initial }: Props) {
               )}
             </div>
           </div>
+          <div className="flex items-center gap-2">
           <select
-            value={dossier.statut}
-            onChange={e => updateStatut(e.target.value as StatutDossier)}
+            value={pendingStatut ?? dossier.statut}
+            onChange={e => setPendingStatut(e.target.value as StatutDossier)}
             className="border rounded-lg px-3 py-1.5 text-xs font-medium bg-white text-gray-700 border-gray-200 focus:outline-none focus:border-blue-400 cursor-pointer"
           >
             <option value="a_relancer">À relancer</option>
@@ -92,6 +107,13 @@ export default function DossierClient({ dossier: initial }: Props) {
             <option value="promesse">Promesse</option>
             <option value="resolu">Résolu</option>
           </select>
+          {pendingStatut && pendingStatut !== dossier.statut && (
+            <button onClick={confirmStatut} disabled={savingStatut}
+              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap">
+              {savingStatut ? '...' : '✓ Valider'}
+            </button>
+          )}
+          </div>
         </div>
         <div className="sm:text-right">
           <div className="text-2xl sm:text-3xl font-bold montant-display text-gray-900">{formatMontant(dossier.montant_total)}</div>
