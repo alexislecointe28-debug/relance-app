@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const { data: dossiers } = await supabase
     .from('dossiers')
-    .select('*, contact:contacts(id), factures(id)')
+    .select('*, contact:contacts(id), factures(id)')\n    .is('archived_at', null)
     .order('jours_retard', { ascending: false })
 
   const today = new Date()
