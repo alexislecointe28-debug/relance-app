@@ -424,7 +424,9 @@ function PdfUploadZone({ loading, onParsed, onError }: {
     setParsing(true)
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      // Utiliser le worker bundlé — pas de CDN externe
+      const workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc.toString()
 
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
