@@ -7,7 +7,7 @@ const navLinks = [
   { href: '/dossiers', label: 'Dossiers', icon: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>
   )},
-  { href: '/', label: 'Dashboard', icon: (
+  { href: '/dashboard', label: 'Dashboard', icon: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
   )},
   { href: '/agenda', label: 'Agenda', icon: (
