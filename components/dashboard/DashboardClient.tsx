@@ -244,12 +244,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   async function saveEnrich() {
     if (!currentEnrich) return
     setEnrichLoading(true)
+    const enrichedId = currentEnrich.id
+    const enrichedSociete = currentEnrich.societe
     const { data: contact } = await supabase.from('contacts').insert({
-      dossier_id: currentEnrich.id,
+      dossier_id: enrichedId,
       ...enrichForm
     }).select().single()
     if (contact) {
-      setDossiers(prev => prev.map(d => d.id === currentEnrich.id ? { ...d, contact } : d))
+      setDossiers(prev => prev.map(d => d.id === enrichedId ? { ...d, contact } : d))
     }
     setEnrichLoading(false)
     const newScore = scoreJour + 1
@@ -257,9 +259,23 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
     if (newScore === 1) incrementStreak()
     setExitingE(true); setSwipeDirE('right')
     setTimeout(() => {
-      setSkippedEnrich(prev => new Set(Array.from(prev).concat(currentEnrich.id)))
+      setSkippedEnrich(prev => new Set(Array.from(prev).concat(enrichedId)))
       setSwipeXE(0); setSwipingE(false); setSwipeDirE(null); setExitingE(false)
       setEnrichMode(false); setEnrichForm({ prenom: '', nom: '', email: '', telephone: '', fonction: '' })
+      // Sync la pile Relancer sur ce dossier pour relancer directement
+      setDossiers(prev => {
+        const updated = prev
+        const idxInRelance = updated.findIndex(d => d.id === enrichedId && d.statut !== 'resolu')
+        if (idxInRelance >= 0) {
+          // Calculer l'index dans toRelance (sans skippedRelance)
+          const relanceList = updated
+            .filter(d => d.statut !== 'resolu')
+            .sort((a, b) => b.jours_retard - a.jours_retard)
+          const newRelanceIdx = relanceList.findIndex(d => d.id === enrichedId)
+          if (newRelanceIdx >= 0) setRelanceIdx(newRelanceIdx)
+        }
+        return prev
+      })
     }, 300)
   }
 
