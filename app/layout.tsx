@@ -9,8 +9,9 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+export const viewport = { themeColor: '#6366F1' }
+
 export const metadata: Metadata = {
-  themeColor: '#6366F1',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
