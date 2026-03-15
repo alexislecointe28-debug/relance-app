@@ -27,10 +27,11 @@ const PLANS = [
   {
     id: 'agence',
     nom: 'Agence',
-    prix: 199,
+    prix: null,
     description: 'Pour les cabinets et agences de recouvrement',
-    features: ['Dossiers illimités', 'Collaborateurs illimités', 'Export PDF', 'Support dédié'],
-    cta: 'Choisir Agence',
+    features: ['Dossiers illimités', 'Collaborateurs illimités', 'Gestion multi-clients', 'Support dédié'],
+    cta: 'Nous contacter',
+    href: 'mailto:contact@paynelope.com',
     highlight: false,
   },
 ]
@@ -77,8 +78,8 @@ export default function PricingPage() {
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-1">{plan.nom}</h2>
                 <div className="flex items-end gap-1 mb-2">
-                  <span className="text-4xl font-bold text-gray-900">{plan.prix === 0 ? 'Gratuit' : `${plan.prix}€`}</span>
-                  {plan.prix > 0 && <span className="text-gray-400 text-sm mb-1">/mois</span>}
+                  <span className="text-4xl font-bold text-gray-900">{plan.prix === null ? 'Sur devis' : plan.prix === 0 ? 'Gratuit' : `${plan.prix}€`}</span>
+                  {plan.prix !== null && plan.prix > 0 && <span className="text-gray-400 text-sm mb-1">/mois</span>}
                 </div>
                 <p className="text-sm text-gray-400">{plan.description}</p>
               </div>
@@ -89,17 +90,24 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => handleCheckout(plan.id)}
-                disabled={loading === plan.id}
-                className={`w-full py-3 rounded-xl font-semibold text-sm transition-colors ${
-                  plan.highlight
-                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                } disabled:opacity-50`}
-              >
-                {loading === plan.id ? 'Redirection...' : plan.cta}
-              </button>
+              {plan.href ? (
+                <a href={plan.href}
+                  className="w-full py-3 rounded-xl font-semibold text-sm transition-colors bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center justify-center">
+                  {plan.cta}
+                </a>
+              ) : (
+                <button
+                  onClick={() => handleCheckout(plan.id)}
+                  disabled={loading === plan.id}
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-colors ${
+                    plan.highlight
+                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                  } disabled:opacity-50`}
+                >
+                  {loading === plan.id ? 'Redirection...' : plan.cta}
+                </button>
+              )}
             </div>
           ))}
         </div>
