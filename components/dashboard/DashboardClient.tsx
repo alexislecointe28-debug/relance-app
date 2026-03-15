@@ -322,7 +322,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
     await supabase.from('actions').insert({
       dossier_id: modalDossier.id, type: modalType,
       niveau_email: modalType === 'email' ? modalNiveau : null,
-      notes: modalNotes, membre_id: membre?.id, rappel_at: modalRappel || null
+      notes: modalNotes, membre_id: membre?.id, rappel_le: modalRappel || null
     })
     if (modalStatut) {
       await supabase.from('dossiers').update({ statut: modalStatut }).eq('id', modalDossier.id)
