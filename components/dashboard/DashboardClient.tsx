@@ -469,7 +469,11 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {nextEnrich && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
             <div
               onTouchStart={e => { startXE.current = e.touches[0].clientX; setSwipingE(true) }}
-              onTouchMove={e => { const dx = e.touches[0].clientX - startXE.current; setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left') }}
+              onTouchMove={e => {
+                const dx = e.touches[0].clientX - startXE.current
+                if (Math.abs(dx) > 10) e.preventDefault()
+                setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left')
+              }}
               onTouchEnd={() => {
                 if (Math.abs(swipeXE) > 80) { if (swipeDirE === 'left') skipEnrich(); else setEnrichMode(true) }
                 else { setSwipeXE(0); setSwipeDirE(null) }
@@ -480,7 +484,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   ? `translateX(${swipeDirE === 'right' ? '110%' : '-110%'}) rotate(${swipeDirE === 'right' ? '8deg' : '-8deg'})`
                   : `translateX(${swipeXE}px) rotate(${swipeXE * 0.04}deg)`,
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
-                touchAction: 'pan-y',
+                touchAction: 'none',
               }}
               className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
             >
