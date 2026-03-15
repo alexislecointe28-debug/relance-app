@@ -124,7 +124,18 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
   const [rappelsOpen, setRappelsOpen] = useState(false)
   const [rappelsShowAll, setRappelsShowAll] = useState(false)
-  const [scoreJour, setScoreJour] = useState(0)
+  const todayKey = 'scoreJour_' + new Date().toISOString().split('T')[0]
+  const [scoreJour, setScoreJourState] = useState(() => {
+    if (typeof window === 'undefined') return 0
+    return parseInt(localStorage.getItem(todayKey) || '0', 10)
+  })
+  function setScoreJour(val: number | ((prev: number) => number)) {
+    setScoreJourState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val
+      if (typeof window !== 'undefined') localStorage.setItem(todayKey, String(next))
+      return next
+    })
+  }
   const [scoreTotal, setScoreTotal] = useState(0)
   const OBJECTIF_HEBDO = 10
   const [streak, setStreak] = useState(0)
