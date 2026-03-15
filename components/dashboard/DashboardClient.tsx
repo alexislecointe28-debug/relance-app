@@ -903,7 +903,7 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4 overflow-y-auto max-h-[90vh] overscroll-contain">
 
         {/* Header */}
         <div className="flex items-center justify-between">
