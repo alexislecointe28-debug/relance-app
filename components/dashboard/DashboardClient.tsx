@@ -8,9 +8,19 @@ import { formatMontant, getStatutDossierLabel, getStatutDossierColor } from '@/l
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+interface FeedItem {
+  id: string
+  type: 'appel' | 'email' | 'note' | 'statut'
+  notes?: string
+  created_at: string
+  niveau_email?: string
+  dossier?: { id: string, societe: string }
+}
+
 interface Props {
   dossiers: (Dossier & { nb_factures: number })[]
   rappels: (Action & { dossier: Dossier })[]
+  feed: FeedItem[]
   stats: { total_montant: number; dossiers_actifs: number; a_relancer: number; pct_qualifies: number }
 }
 
@@ -113,7 +123,7 @@ function CardStack({
   )
 }
 
-export default function DashboardClient({ dossiers: initialDossiers, rappels, stats }: Props) {
+export default function DashboardClient({ dossiers: initialDossiers, rappels, feed, stats }: Props) {
   const [dossiers, setDossiers] = useState(initialDossiers)
   const [skippedEnrich, setSkippedEnrich] = useState<Set<string>>(new Set())
   const [skippedRelance, setSkippedRelance] = useState<Set<string>>(new Set())
@@ -742,6 +752,19 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
         {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
       </div>
 
+      {/* === MINI FEED === */}
+      {feed.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+          <div className="space-y-1">
+            {feed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
+          </div>
+        </div>
+      )}
+
       {/* Modal script */}
       {scriptModal && (
         <ModalScript data={scriptModal} onClose={() => setScriptModal(null)} />
@@ -1133,6 +1156,45 @@ function ModalScript({ data, onClose }: {
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ---- Mini feed des dernières actions ----
+function FeedRow({ item }: { item: FeedItem }) {
+  const icons: Record<string, string> = {
+    appel: '📞',
+    email: '✉️',
+    note: '📝',
+    statut: '🔄',
+  }
+  const labels: Record<string, string> = {
+    appel: 'Appel',
+    email: 'Email',
+    note: 'Note',
+    statut: 'Statut',
+  }
+
+  function timeAgo(dateStr: string) {
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+    if (diff < 60) return 'à l\'instant'
+    if (diff < 3600) return `${Math.floor(diff / 60)}min`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+    if (diff < 604800) return `${Math.floor(diff / 86400)}j`
+    return new Date(dateStr).toLocaleDateString('fr', { day: 'numeric', month: 'short' })
+  }
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group">
+      <span className="text-base w-5 text-center shrink-0">{icons[item.type] || '•'}</span>
+      <div className="flex-1 min-w-0">
+        <span className="text-xs font-semibold text-gray-700">{item.dossier?.societe || '—'}</span>
+        <span className="text-xs text-gray-400 ml-1.5">{labels[item.type]}</span>
+        {item.notes && (
+          <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
+        )}
+      </div>
+      <span className="text-xs text-gray-300 shrink-0">{timeAgo(item.created_at)}</span>
     </div>
   )
 }

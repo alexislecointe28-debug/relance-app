@@ -20,6 +20,12 @@ export default async function DashboardPage() {
   const j7 = new Date(today)
   j7.setDate(j7.getDate() + 7)
 
+  const { data: feed } = await supabase
+    .from('actions')
+    .select('id, type, notes, created_at, niveau_email, dossier:dossiers(id, societe)')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
   const { data: rappels } = await supabase
     .from('actions')
     .select('*, dossier:dossiers(id, societe, montant_total, statut)')
@@ -50,6 +56,7 @@ export default async function DashboardPage() {
       <DashboardClient
         dossiers={dossiersWithCount as any}
         rappels={(rappels || []) as any}
+        feed={(feed || []) as any}
         stats={{ total_montant, dossiers_actifs, a_relancer, pct_qualifies }}
       />
     </div>
