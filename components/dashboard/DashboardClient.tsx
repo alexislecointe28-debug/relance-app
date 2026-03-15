@@ -93,7 +93,7 @@ function CardStack({
 }) {
   return (
     <section>
-      <div className="relative" style={{ height: '460px' }}>
+      <div className="relative" style={{ height: '400px' }}>
         {children}
       </div>
       <div className="flex items-center justify-between mt-3 px-1">
@@ -548,35 +548,35 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
                 {!enrichMode ? (
                   <>
-                    {/* Zone centrale */}
-                    <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-4">
-                      <div className="w-16 h-16 rounded-full bg-orange-50 border-2 border-dashed border-orange-200 flex items-center justify-center mb-4">
-                        <span className="text-2xl">🔍</span>
+                    {/* Zone centrale épurée */}
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-5xl mb-3 opacity-20">👤</div>
+                        <div className="text-sm text-gray-400">Aucun contact connu</div>
                       </div>
-                      <div className="text-base font-bold text-gray-800 mb-1">Qui appeler chez {currentEnrich.societe} ?</div>
-                      <div className="text-xs text-gray-400">Trouve le nom du responsable compta ou DAF</div>
                     </div>
+                    {/* Actions */}
                     <div className="space-y-2">
                       {enrichInRelance && (
                         <button onClick={syncEnrichToRelance}
-                          className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
-                          ⚡ Déjà un contact → Relancer maintenant
+                          className="w-full py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
+                          ⚡ Déjà un contact — relancer
                         </button>
                       )}
-                      <button onClick={() => setScriptModal({ type: 'identifier', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-xs font-semibold hover:bg-orange-100 transition-colors">
-                        📞 Script pour trouver le contact
-                      </button>
                       <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => setScriptModal({ type: 'identifier', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
+                          className="py-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-semibold hover:bg-orange-100 transition-colors border border-orange-100">
+                          📞 Script
+                        </button>
                         <button onClick={skipEnrich}
-                          className="py-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl font-semibold text-sm transition-all border border-gray-200">
+                          className="py-3 bg-gray-50 hover:bg-gray-100 text-gray-400 rounded-xl text-sm transition-all border border-gray-100">
                           Passer
                         </button>
-                        <button onClick={() => setEnrichMode(true)}
-                          className="py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-sm transition-colors">
-                          + Ajouter contact
-                        </button>
                       </div>
+                      <button onClick={() => setEnrichMode(true)}
+                        className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-sm transition-colors">
+                        + Ajouter contact
+                      </button>
                     </div>
                   </>
                 ) : (
@@ -678,46 +678,41 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                 <div className="h-1 bg-gray-100 rounded-full mb-3 overflow-hidden">
                   <div className={`h-full rounded-full transition-all ${colorsR.bar}`} style={{ width: `${Math.min(100, (currentRelance.jours_retard / 180) * 100)}%` }} />
                 </div>
-                {/* Contact */}
-                {currentRelance.contact ? (
-                  <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm shrink-0">
-                      {(currentRelance.contact.prenom?.[0] || '?').toUpperCase()}
+                {/* Contact + motivation */}
+                <div className="flex-1 flex flex-col justify-center gap-3">
+                  {currentRelance.contact ? (
+                    <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-3 py-2.5">
+                      <div className="w-9 h-9 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-700 font-black text-base shrink-0">
+                        {(currentRelance.contact.prenom?.[0] || '?').toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-gray-900 truncate">{currentRelance.contact.prenom} {currentRelance.contact.nom}</div>
+                        {currentRelance.contact.telephone ? (
+                          <a href={`tel:${currentRelance.contact.telephone}`} onClick={e => e.stopPropagation()}
+                            className="text-xs text-emerald-600 font-semibold hover:underline">
+                            📞 {currentRelance.contact.telephone}
+                          </a>
+                        ) : <div className="text-xs text-gray-400 italic">{currentRelance.contact.fonction || 'Pas de téléphone'}</div>}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-gray-900">{currentRelance.contact.prenom} {currentRelance.contact.nom}</div>
-                      {currentRelance.contact.telephone ? (
-                        <a href={`tel:${currentRelance.contact.telephone}`} onClick={e => e.stopPropagation()}
-                          className="text-xs text-emerald-600 font-mono hover:text-emerald-700 font-semibold">
-                          📞 {currentRelance.contact.telephone}
-                        </a>
-                      ) : <div className="text-xs text-gray-400">{currentRelance.contact.fonction || 'Pas de tél'}</div>}
+                  ) : (
+                    <div className="flex items-center gap-2 bg-amber-50 rounded-xl px-3 py-2.5">
+                      <span className="text-lg">⚠️</span>
+                      <div className="text-xs text-amber-700 font-medium">Pas de contact — identifie d'abord</div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mb-3">
-                    <span className="text-amber-400">⚠️</span>
-                    <div className="text-xs text-amber-700 font-medium">Pas encore de contact — identifie d'abord</div>
-                  </div>
-                )}
-                {/* Phrase motivation */}
-                <div className="flex-1 flex items-center justify-center px-1">
-                  <p className="text-xs text-gray-400 text-center italic leading-relaxed">
+                  )}
+                  <p className="text-xs text-gray-400 italic text-center px-1 leading-relaxed">
                     "{getMotivation(currentRelance.id)}"
                   </p>
                 </div>
-                <div className="mt-auto space-y-2">
-                  <button onClick={() => setScriptModal({ type: 'relancer', societe: currentRelance.societe, montant: currentRelance.montant_total, jours: currentRelance.jours_retard, statut: currentRelance.statut, contact: currentRelance.contact ? currentRelance.contact.prenom + ' ' + currentRelance.contact.nom : undefined })}
-                    className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
-                    📜 Script d'appel
-                  </button>
+                <div className="space-y-2">
                   {relanceInEnrich && (
                     <button onClick={syncRelanceToEnrich}
-                      className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
-                      ① Identifier ce contact
+                      className="w-full py-2 bg-orange-50 text-orange-600 rounded-xl text-xs font-semibold hover:bg-orange-100 transition-colors">
+                      ① Identifier ce contact d'abord
                     </button>
                   )}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 mt-1">
                     <button onClick={() => openRelancer(currentRelance, 'appel')}
                       className="flex flex-col items-center gap-1.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors">
                       <span className="text-lg">📞</span><span className="text-xs font-semibold">Appel</span>
