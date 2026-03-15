@@ -9,10 +9,10 @@ export default async function AssignationsPage() {
   const supabase = createServerSupabaseClient()
 
   const { data: currentMembre } = await supabase.from('membres').select('id, role').single()
-  if (currentMembre?.role !== 'admin') notFound()
-
   const { data: org } = await supabase.from('organisations').select('plan').single()
-  if (org?.plan !== 'agence') notFound()
+
+  // Accessible à tous les admins — pas seulement agence (pour les tests)
+  if (currentMembre?.role !== 'admin') notFound()
 
   const { data: dossiers } = await supabase
     .from('dossiers')
