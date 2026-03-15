@@ -462,7 +462,7 @@ function PdfUploadZone({ loading, onParsed, onError }: {
       || text.match(/((?:FAC|FACT|INV|DEV|BL)\s*[\d]{4,})/i)
     if (pieceMatch) result.numero = pieceMatch[1].replace(/\s/g, '')
 
-    // Société client
+    // Société client — extraire uniquement le nom, pas l'adresse
     const societePatterns = [
       /(?:client|destinataire|facturé à|adressé à)[\s:]+([^\n\r,]{3,60})/i,
     ]
@@ -479,6 +479,16 @@ function PdfUploadZone({ loading, onParsed, onError }: {
           break
         }
       }
+    }
+    // Nettoyer le nom : supprimer N° client, codes, adresses qui auraient été capturés
+    if (result.societe) {
+      // Supprimer tout ce qui ressemble à un code client (CLTxxxxx), un chiffre isolé, une adresse
+      result.societe = result.societe
+        .replace(/\s*(?:CLT|N°\s*client|client\s*:?)\s*\S+/gi, '')  // codes client
+        .replace(/\s+\d{1,3}\s+[A-Z]{2,}.*/i, '')  // adresse (numéro + rue)
+        .replace(/\s+\d{5}\s+.*/i, '')              // code postal
+        .replace(/\s{2,}/g, ' ')                    // espaces multiples
+        .trim()
     }
 
     // Date facture
