@@ -47,25 +47,26 @@ export async function POST(request: Request) {
     .single()
 
   const plan = org?.plan || 'demo'
-  const LIMITE_DEMO = 3
+  const LIMITES: Record<string, number> = {
+    demo: 3,
+    solo: 300,
+    agence: Infinity,
+  }
+  const limite = LIMITES[plan] ?? 3
 
-  if (plan === 'demo') {
+  if (limite !== Infinity) {
     const { count } = await supabase
       .from('dossiers')
       .select('id', { count: 'exact', head: true })
       .eq('organisation_id', membre.organisation_id)
     const currentCount = count || 0
-    if (currentCount >= LIMITE_DEMO) {
-      return NextResponse.json({ error: 'LIMITE_DEMO' }, { status: 403 })
+    if (currentCount >= limite) {
+      return NextResponse.json({ error: plan === 'demo' ? 'LIMITE_DEMO' : 'LIMITE_PLAN' }, { status: 403 })
     }
-    // Limiter le nombre de nouveaux dossiers créables
-    const remaining = LIMITE_DEMO - currentCount
-    // On va tronquer les factures pour ne créer que `remaining` nouveaux dossiers max
-    // (on tronque après groupement dans la suite)
-    const _demoRemaining = remaining
-    Object.assign(request, { _demoRemaining })
+    const _remaining = limite - currentCount
+    Object.assign(request, { _remaining })
   }
-  const demoRemaining = (request as any)._demoRemaining ?? Infinity
+  const demoRemaining = (request as any)._remaining ?? Infinity
 
   // Récupérer tous les numéros de factures existants pour cette org
   const { data: existingFactures } = await supabase
