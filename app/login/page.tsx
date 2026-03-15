@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -67,8 +67,8 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-      <p className="text-center text-xs text-gray-300 mt-8">
-        <a href="/legal" className="hover:text-gray-500 transition-colors">CGU & Mentions légales</a>
+      <p className="text-center text-xs text-gray-300 pt-6">
+        <a href="/legal" className="hover:text-gray-500 transition-colors">CGU &amp; Mentions légales</a>
       </p>
     </div>
   )
