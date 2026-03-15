@@ -81,11 +81,11 @@ export function detectSeparator(csv: string): string {
 export function detectColumns(headers: string[]): Record<string, number> {
   const mapping: Record<string, number> = {}
   const rules: Record<string, RegExp> = {
-    numero: /num[eé]ro|n°|facture.*num|ref|pi[eè]ce|piece/i,
-    montant_ttc: /montant|ttc|total|amount/i,
-    date_facture: /date.*fact|fact.*date|émis/i,
-    date_echeance: /[eé]ch[eé]ance|due|expir/i,
-    societe: /soci[eé]t[eé]|client|company|nom/i,
+    numero: /num[eé]ro|n[°o]\.?\s*fact|fact.*num|ref|pi[eè]ce|piece|^n°$|^ref$/i,
+    montant_ttc: /montant|ttc|total|amount|^ht$|^ttc$/i,
+    date_facture: /date.*fact|fact.*date|[eé]mis|date.*pi[eè]ce|pi[eè]ce.*date|^date$/i,
+    date_echeance: /[eé]ch[eé]ance|due|expir|limit/i,
+    societe: /soci[eé]t[eé]|client|company|nom.*client|client.*nom|raison/i,
     bon_commande: /bon.*cmd|commande|bc|po\b/i,
   }
   headers.forEach((h, i) => {

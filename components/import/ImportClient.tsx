@@ -128,15 +128,29 @@ export default function ImportClient() {
         <div className="text-6xl mb-4">✅</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">Import réussi !</h2>
         {importResult && (
-          <div className="space-y-1 mb-8 text-sm text-gray-500">
-            <p>{importResult.imported} facture(s) importée(s)</p>
-            {importResult.skipped > 0 && <p className="text-amber-600">{importResult.skipped} doublon(s) ignoré(s)</p>}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-8 text-left space-y-2 max-w-xs mx-auto">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Dossiers créés / mis à jour</span>
+              <span className="font-bold text-gray-900">{importResult.imported}</span>
+            </div>
+            {importResult.skipped > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-amber-600">Doublons ignorés</span>
+                <span className="font-bold text-amber-600">{importResult.skipped}</span>
+              </div>
+            )}
           </div>
         )}
-        <button onClick={() => router.push('/dashboard')}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold">
-          Voir le dashboard →
-        </button>
+        <div className="flex gap-3 justify-center">
+          <button onClick={() => { setStep('upload'); setImportResult(null) }}
+            className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50">
+            Nouvel import
+          </button>
+          <button onClick={() => router.push('/dashboard')}
+            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold">
+            Voir le dashboard →
+          </button>
+        </div>
       </main>
     )
   }
