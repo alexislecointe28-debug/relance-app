@@ -194,6 +194,20 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
   const safeRelanceIdx = Math.min(relanceIdx, Math.max(0, toRelance.length - 1))
   const currentRelance = toRelance[safeRelanceIdx] || null
   const nextRelance = toRelance[safeRelanceIdx + 1] || null
+
+  // Sync : trouver la même société dans l'autre pile
+  function syncEnrichToRelance() {
+    if (!currentEnrich) return
+    const idx = toRelance.findIndex(d => d.id === currentEnrich.id)
+    if (idx >= 0) setRelanceIdx(idx)
+  }
+  function syncRelanceToEnrich() {
+    if (!currentRelance) return
+    const idx = toEnrich.findIndex(d => d.id === currentRelance.id)
+    if (idx >= 0) setEnrichIdx(idx)
+  }
+  const enrichInRelance = currentEnrich ? toRelance.findIndex(d => d.id === currentEnrich.id) >= 0 : false
+  const relanceInEnrich = currentRelance ? toEnrich.findIndex(d => d.id === currentRelance.id) >= 0 : false
   const rappelsVisible = rappels.filter(r => !rappelsDismissed.has(r.id))
   const montantFormate = formatMontant(stats.total_montant)
 
@@ -471,6 +485,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                         className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
                         📜 Script d'appel
                       </button>
+                      {enrichInRelance && (
+                        <button onClick={syncEnrichToRelance}
+                          className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
+                          ⚡ Relancer {currentEnrich.societe.split(' ')[0]} →
+                        </button>
+                      )}
                       <div className="grid grid-cols-2 gap-3">
                         <button onClick={skipEnrich}
                           className="flex items-center justify-center gap-2 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-400 rounded-xl font-semibold text-sm transition-all">
@@ -597,6 +617,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                     className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
                     📜 Script d'appel
                   </button>
+                  {relanceInEnrich && (
+                    <button onClick={syncRelanceToEnrich}
+                      className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
+                      ← Enrichir {currentRelance.societe.split(' ')[0]}
+                    </button>
+                  )}
                   <div className="grid grid-cols-3 gap-2">
                     <button onClick={() => openRelancer(currentRelance, 'appel')}
                       className="flex flex-col items-center gap-1.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors">
