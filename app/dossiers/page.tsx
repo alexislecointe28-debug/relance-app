@@ -9,7 +9,7 @@ export default async function DossiersPage() {
 
   const { data: dossiers } = await supabase
     .from('dossiers')
-    .select('*, factures(id), actions(id, type, created_at)')
+    .select('*, factures(id), actions(id, type, created_at), assignee:membres!dossiers_assigned_to_fkey(id, prenom, nom, email)')
     .order('jours_retard', { ascending: false })
 
   const dossiersWithCount = (dossiers || []).map(d => ({

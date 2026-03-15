@@ -10,11 +10,22 @@ export default async function DashboardPage() {
   const { data: org } = await supabase.from('organisations').select('plan').single()
   const plan = org?.plan || 'demo'
 
-  const { data: dossiers } = await supabase
+  // Récupérer le membre courant pour filtrage agence
+  const { data: currentMembre } = await supabase.from('membres').select('id, role').single()
+  const isAdmin = currentMembre?.role === 'admin'
+
+  let dossierQuery = supabase
     .from('dossiers')
-    .select('*, contact:contacts(id, prenom, nom, email, telephone, fonction), factures(id)')
+    .select('*, contact:contacts(id, prenom, nom, email, telephone, fonction), factures(id), assignee:membres!dossiers_assigned_to_fkey(id, prenom, nom, email)')
     .is('archived_at', null)
     .order('jours_retard', { ascending: false })
+
+  // Plan agence + collab : seulement ses dossiers assignés
+  if (plan === 'agence' && !isAdmin && currentMembre?.id) {
+    dossierQuery = dossierQuery.eq('assigned_to', currentMembre.id)
+  }
+
+  const { data: dossiers } = await dossierQuery
 
   const today = new Date()
   const j7 = new Date(today)

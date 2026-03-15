@@ -29,6 +29,7 @@ export interface Dossier {
   montant_total: number
   jours_retard: number
   assigned_to: string | null
+  assignee?: { id: string; prenom?: string; nom?: string; email: string } | null
   created_at: string
   updated_at: string
   // Joined
@@ -83,4 +84,11 @@ export interface DashboardStats {
   a_relancer: number
   pct_qualifies: number
   rappels: (Action & { dossier?: Dossier })[]
+}
+
+export interface Assignee {
+  id: string
+  prenom?: string
+  nom?: string
+  email: string
 }

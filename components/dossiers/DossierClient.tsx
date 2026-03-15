@@ -13,16 +13,20 @@ interface Props {
     factures: Facture[]
     contact: Contact | null
     actions: (Action & { membre?: any })[]
+    assignee?: { id: string; prenom?: string; nom?: string; email: string } | null
   }
+  membres?: { id: string; prenom?: string; nom?: string; email: string }[]
+  isAdmin?: boolean
+  plan?: string
 }
 
 type Modal = 'appel' | 'email' | 'contact' | null
-
-export default function DossierClient({ dossier: initial }: Props) {
+export default function DossierClient({ dossier: initial, membres = [], isAdmin = false, plan = 'demo' }: Props) {
   const [dossier, setDossier] = useState(initial)
   const [modal, setModal] = useState<Modal>(null)
   const [pendingStatut, setPendingStatut] = useState<StatutDossier | null>(null)
   const [savingStatut, setSavingStatut] = useState(false)
+  const [savingAssignee, setSavingAssignee] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -49,6 +53,14 @@ export default function DossierClient({ dossier: initial }: Props) {
       loadConfetti(() => confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#6366F1', '#10B981', '#F59E0B'] }))
     }
     router.refresh()
+  }
+
+  async function updateAssignee(memberId: string | null) {
+    setSavingAssignee(true)
+    await supabase.from('dossiers').update({ assigned_to: memberId }).eq('id', dossier.id)
+    const assigneeMembre = memberId ? membres.find(m => m.id === memberId) || null : null
+    setDossier(prev => ({ ...prev, assigned_to: memberId, assignee: assigneeMembre }))
+    setSavingAssignee(false)
   }
 
   async function updateFactureStatut(factureId: string, statut: StatutFacture) {
@@ -184,7 +196,43 @@ export default function DossierClient({ dossier: initial }: Props) {
         </div>
 
         {/* Contact */}
-        <div className="order-1 lg:order-2">
+        <div className="order-1 lg:order-2 space-y-4">
+          {/* Assignation — plan Agence, admin seulement */}
+          {plan === 'agence' && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-sm text-gray-900">Assigné à</h2>
+                {savingAssignee && <span className="text-xs text-gray-400">Enregistrement...</span>}
+              </div>
+              {isAdmin ? (
+                <select
+                  value={dossier.assigned_to || ''}
+                  onChange={e => updateAssignee(e.target.value || null)}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  <option value="">— Non assigné —</option>
+                  {membres.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.prenom && m.nom ? `${m.prenom} ${m.nom}` : m.email}
+                    </option>
+                  ))}
+                </select>
+              ) : dossier.assignee ? (
+                <div className="flex items-center gap-3 bg-indigo-50 rounded-xl px-3 py-2">
+                  <div className="w-7 h-7 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                    {(dossier.assignee.prenom?.[0] || dossier.assignee.email[0]).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">
+                    {dossier.assignee.prenom && dossier.assignee.nom
+                      ? `${dossier.assignee.prenom} ${dossier.assignee.nom}`
+                      : dossier.assignee.email}
+                  </span>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400 italic">Non assigné</div>
+              )}
+            </div>
+          )}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 lg:sticky lg:top-20 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-sm text-gray-900">Contact comptabilité</h2>
