@@ -593,7 +593,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {nextRelance && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
             <div
               onTouchStart={e => { startXR.current = e.touches[0].clientX; setSwipingR(true) }}
-              onTouchMove={e => { const dx = e.touches[0].clientX - startXR.current; setSwipeXR(dx); setSwipeDirR(dx > 0 ? 'right' : 'left') }}
+              onTouchMove={e => {
+                const dx = e.touches[0].clientX - startXR.current
+                // Bloquer le scroll vertical si le swipe est majoritairement horizontal
+                if (Math.abs(dx) > 10) e.preventDefault()
+                setSwipeXR(dx); setSwipeDirR(dx > 0 ? 'right' : 'left')
+              }}
               onTouchEnd={() => {
                 if (Math.abs(swipeXR) > 80) { if (swipeDirR === 'left') skipRelance(); else openRelancer(currentRelance) }
                 else { setSwipeXR(0); setSwipeDirR(null) }
@@ -604,7 +609,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   ? `translateX(${swipeDirR === 'right' ? '110%' : '-110%'}) rotate(${swipeDirR === 'right' ? '8deg' : '-8deg'})`
                   : `translateX(${swipeXR}px) rotate(${swipeXR * 0.04}deg)`,
                 transition: exitingR || (!swipingR && swipeXR !== 0) ? 'transform 0.3s ease' : 'none',
-                touchAction: 'pan-y',
+                touchAction: 'none',
               }}
               className={`absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg ${colorsR.glow} cursor-grab active:cursor-grabbing select-none`}
             >
