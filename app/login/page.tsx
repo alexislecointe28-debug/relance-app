@@ -30,6 +30,14 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
+        {/* Bandeau plan gratuit */}
+        <div className="flex items-center justify-center gap-2 mb-5">
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-4 py-2 rounded-full">
+            <span className="text-emerald-500">✓</span>
+            Essai gratuit — 3 dossiers sans CB
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img src="/logo.png" alt="Paynelope" style={{ height: '56px', width: '240px', objectFit: 'contain' }} />

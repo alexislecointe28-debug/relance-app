@@ -29,6 +29,14 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
+        {/* Bandeau plan gratuit */}
+        <div className="flex items-center justify-center gap-2 mb-5">
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-4 py-2 rounded-full">
+            <span className="text-emerald-500">✓</span>
+            Essai gratuit — 3 dossiers sans CB
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <img src="/logo.png" alt="Paynelope" className="h-12 w-auto mx-auto mb-4" />
           <h1 className="text-xl font-bold text-gray-900">Créer votre espace</h1>
