@@ -497,9 +497,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
           <>
             {nextEnrich && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
             <SwipeableCard
-              disabled={enrichMode}
               onSwipeLeft={skipEnrich}
-              onSwipeRight={() => { setSwipeXE(0); setSwipeDirE(null); setSwipingE(false); setEnrichMode(true) }}
+              onSwipeRight={skipEnrich}
               onSwipeX={dx => { setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left'); setSwipingE(dx !== 0) }}
               style={{
                 transform: exitingE
@@ -510,7 +509,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               }}
               className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
             >
-              {swipeXE > 30 && <div className="absolute top-4 left-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">🎯 ENRICHIR</div>}
+              {swipeXE > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">PASSER →</div>}
               {swipeXE < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg]">PASSER →</div>}
               <div className="p-5 h-full flex flex-col">
                 <div className="flex items-start justify-between gap-3 mb-2">
@@ -619,7 +618,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             {nextRelance && <div className="absolute inset-x-0 top-3 mx-3 bg-white border border-gray-200 rounded-2xl opacity-60 scale-95 pointer-events-none" style={{ height: '280px' }} />}
             <SwipeableCard
               onSwipeLeft={skipRelance}
-              onSwipeRight={() => openRelancer(currentRelance)}
+              onSwipeRight={skipRelance}
               onSwipeX={dx => { setSwipeXR(dx); setSwipeDirR(dx > 0 ? 'right' : 'left'); setSwipingR(dx !== 0) }}
               style={{
                 transform: exitingR
@@ -629,7 +628,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               }}
               className={`absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg ${colorsR.glow} cursor-grab active:cursor-grabbing select-none`}
             >
-              {swipeXR > 30 && <div className="absolute top-4 left-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">⚡ RELANCER</div>}
+              {swipeXR > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">PASSER →</div>}
               {swipeXR < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg]">PASSER →</div>}
               <div className="p-5 h-full flex flex-col">
                 <div className="flex items-start justify-between gap-3 mb-3">

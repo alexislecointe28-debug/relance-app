@@ -5,52 +5,52 @@ interface SwipeableCardProps {
   onSwipeLeft: () => void
   onSwipeRight: () => void
   onSwipeX: (x: number) => void
-  disabled?: boolean
   children: ReactNode
   className?: string
   style?: React.CSSProperties
 }
 
 export default function SwipeableCard({
-  onSwipeLeft, onSwipeRight, onSwipeX, disabled, children, className, style
+  onSwipeLeft, onSwipeRight, onSwipeX, children, className, style
 }: SwipeableCardProps) {
   const ref = useRef<HTMLDivElement>(null)
   const startX = useRef(0)
-  const currentX = useRef(0)
-  const active = useRef(false)
+  const startY = useRef(0)
+  const isHorizontal = useRef<boolean | null>(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
     function onTouchStart(e: TouchEvent) {
-      if (disabled) return
       startX.current = e.touches[0].clientX
-      currentX.current = 0
-      active.current = true
+      startY.current = e.touches[0].clientY
+      isHorizontal.current = null
     }
 
     function onTouchMove(e: TouchEvent) {
-      if (!active.current || disabled) return
       const dx = e.touches[0].clientX - startX.current
-      // Seulement bloquer si le mouvement est clairement horizontal
-      if (Math.abs(dx) > Math.abs(e.touches[0].clientY - (e as any)._startY || 0) && Math.abs(dx) > 5) {
-        e.preventDefault()
+      const dy = e.touches[0].clientY - startY.current
+
+      // Déterminer la direction au premier mouvement significatif
+      if (isHorizontal.current === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+        isHorizontal.current = Math.abs(dx) > Math.abs(dy)
       }
-      currentX.current = dx
-      onSwipeX(dx)
+
+      if (isHorizontal.current) {
+        e.preventDefault()
+        onSwipeX(dx)
+      }
     }
 
-    function onTouchEnd() {
-      if (!active.current) return
-      active.current = false
-      const dx = currentX.current
-      if (Math.abs(dx) > 80) {
+    function onTouchEnd(e: TouchEvent) {
+      const dx = e.changedTouches[0].clientX - startX.current
+      onSwipeX(0)
+      if (isHorizontal.current && Math.abs(dx) > 60) {
         if (dx < 0) onSwipeLeft()
         else onSwipeRight()
-      } else {
-        onSwipeX(0)
       }
+      isHorizontal.current = null
     }
 
     el.addEventListener('touchstart', onTouchStart, { passive: true })
@@ -62,7 +62,7 @@ export default function SwipeableCard({
       el.removeEventListener('touchmove', onTouchMove)
       el.removeEventListener('touchend', onTouchEnd)
     }
-  }) // Pas de deps — re-bind à chaque render pour avoir les derniers callbacks
+  })
 
   return (
     <div ref={ref} className={className} style={style}>
