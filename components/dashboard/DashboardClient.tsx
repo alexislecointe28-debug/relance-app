@@ -680,9 +680,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest">② Relancer</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatutDossierColor(currentRelance.statut)}`}>
-                        {getStatutDossierLabel(currentRelance.statut)}
-                      </span>
                     </div>
                     <Link href={`/dossiers/${currentRelance.id}`} onClick={e => e.stopPropagation()} className="font-black text-xl text-gray-900 hover:text-indigo-600 transition-colors leading-tight block truncate">
                       {currentRelance.societe}
