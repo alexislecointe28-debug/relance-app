@@ -869,7 +869,7 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
     })
     setSending(false)
     setSent(true)
-    setTimeout(() => onSaved(), 1000)
+    // Ne pas passer automatiquement à la carte suivante — l'utilisateur ferme manuellement
   }
 
   return (
@@ -1017,13 +1017,27 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none leading-relaxed" />
             </div>
             {sendError && <p className="text-xs text-red-500">{sendError}</p>}
+            {sent ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-semibold">
+                  ✅ Email envoyé avec succès
+                </div>
+                <button onClick={onSaved} className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold">
+                  Dossier suivant →
+                </button>
+                <button onClick={onClose} className="w-full py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50">
+                  Fermer
+                </button>
+              </div>
+            ) : (
             <div className="flex gap-2">
               <button onClick={() => setEmailStep('compose')} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600">Retour</button>
-              <button onClick={handleEmailSend} disabled={sending || sent}
+              <button onClick={handleEmailSend} disabled={sending}
                 className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50">
-                {sending ? 'Envoi...' : sent ? 'Envoyé ✓' : 'Envoyer →'}
+                {sending ? 'Envoi...' : 'Envoyer →'}
               </button>
             </div>
+            )}
           </>
         )}
 
