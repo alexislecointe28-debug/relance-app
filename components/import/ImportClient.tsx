@@ -424,9 +424,8 @@ function PdfUploadZone({ loading, onParsed, onError }: {
     setParsing(true)
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      // Utiliser le worker bundlé — pas de CDN externe
-      const workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc.toString()
+      // Worker servi depuis /public — évite les problèmes de bundling
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
