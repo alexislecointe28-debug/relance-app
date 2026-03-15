@@ -86,30 +86,43 @@ function BadgesList({ scoreTotal, streak }: { scoreTotal: number, streak: number
 }
 
 function CardStack({
-  title, emoji, color, count, children, onPrev, onNext, labelLeft, labelRight
+  title, subtitle, step, stepColor, count, children, onPrev, onNext, total
 }: {
-  title: string, emoji: string, color: string, count: number, children: React.ReactNode,
-  onPrev?: () => void, onNext?: () => void, labelLeft?: string, labelRight?: string
+  title: string, subtitle: string, step: number, stepColor: string, count: number,
+  children: React.ReactNode, onPrev?: () => void, onNext?: () => void, total?: number
 }) {
   return (
     <section>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-base">{emoji}</span>
-        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</h2>
-        <div className="flex-1 h-px bg-gray-100" />
-        <span className="text-xs text-gray-400">{count}</span>
+      {/* Header étape numérotée */}
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shrink-0 ${stepColor}`}>
+          {step}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-gray-900">{title}</div>
+          <div className="text-xs text-gray-400">{subtitle}</div>
+        </div>
+        {count > 0 && (
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stepColor} text-white`}>{count}</span>
+        )}
       </div>
+      {/* Connecteur entre étapes — seulement sur l'étape 1 */}
       <div className="relative" style={{ height: '420px' }}>
         {children}
       </div>
       {(onPrev || onNext) && (
-        <div className="flex gap-2 mt-3 justify-center">
+        <div className="flex items-center justify-center gap-3 mt-3">
           <button onClick={onPrev} disabled={!onPrev}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 hover:shadow-md transition-all disabled:opacity-30"
-            title={labelLeft}>←</button>
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 disabled:opacity-30 transition-all">
+            ←
+          </button>
+          {total && total > 1 && (
+            <span className="text-xs text-gray-400">{(onPrev ? 1 : 0) + 1} / {total}</span>
+          )}
           <button onClick={onNext} disabled={!onNext}
-            className={`w-10 h-10 flex items-center justify-center rounded-full ${color} shadow-sm text-white hover:shadow-md transition-all disabled:opacity-30`}
-            title={labelRight}>→</button>
+            className={`w-9 h-9 flex items-center justify-center rounded-full shadow-sm text-white disabled:opacity-30 transition-all ${stepColor}`}>
+            →
+          </button>
         </div>
       )}
     </section>
@@ -153,7 +166,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
   // Mode enrichir inline
   const [enrichMode, setEnrichMode] = useState(false)
-  const [scriptModal, setScriptModal] = useState<{ type: 'enrichir' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string } | null>(null)
+  const [scriptModal, setScriptModal] = useState<{ type: 'identifier' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string } | null>(null)
   const [enrichForm, setEnrichForm] = useState({ prenom: '', nom: '', email: '', telephone: '', fonction: '' })
   const [enrichLoading, setEnrichLoading] = useState(false)
 
@@ -477,15 +490,34 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       )}
 
       {/* === 2 PILES CÔTE À CÔTE DESKTOP === */}
+      {/* Indicateur de progression étapes */}
+      <div className="hidden sm:flex items-center gap-2 mb-2 px-1">
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center text-white text-xs font-bold">1</div>
+          <span className="text-xs font-medium text-violet-600">Identifier</span>
+        </div>
+        <div className="flex-1 flex items-center gap-1">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-gray-300 text-xs">→</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">2</div>
+          <span className="text-xs font-medium text-indigo-600">Relancer</span>
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
       {/* === PILE ENRICHIR === */}
       <CardStack
-        title={toEnrich.length > 0 ? `${toEnrich.length} à enrichir` : 'Tous enrichis 🎉'}
-        emoji="🎯" color="bg-indigo-600" count={toEnrich.length}
+        step={1}
+        stepColor="bg-violet-500"
+        title="Identifier — qui appeler ?"
+        subtitle={toEnrich.length > 0 ? `${toEnrich.length} contact${toEnrich.length > 1 ? 's' : ''} à trouver` : 'Tous identifiés ✓'}
+        count={toEnrich.length}
         onPrev={enrichIdx > 0 ? () => setEnrichIdx(i => i - 1) : undefined}
         onNext={enrichIdx < toEnrich.length - 1 ? () => setEnrichIdx(i => i + 1) : undefined}
-        labelLeft="Précédent" labelRight="Suivant"
+        total={toEnrich.length}
       >
         {toEnrich.length === 0 ? (
           <div className="absolute inset-0 bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-sm">
@@ -533,14 +565,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                       <div className="text-xs text-gray-400 mt-1">Sans contact, pas de relance. Simple.</div>
                     </div>
                     <div className="mt-auto space-y-2">
-                      <button onClick={() => setScriptModal({ type: 'enrichir', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
+                      <button onClick={() => setScriptModal({ type: 'identifier', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
                         className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
                         📜 Script d'appel
                       </button>
                       {enrichInRelance && (
                         <button onClick={syncEnrichToRelance}
                           className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
-                          ⚡ Relancer {currentEnrich.societe.split(' ')[0]} →
+                          ⚡ Relancer maintenant →
                         </button>
                       )}
                       <div className="grid grid-cols-2 gap-3">
@@ -601,11 +633,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* === PILE RELANCER === */}
       <CardStack
-        title={toRelance.length > 0 ? `${toRelance.length} à relancer` : 'File vide 🏆'}
-        emoji="⚡" color="bg-indigo-600" count={toRelance.length}
+        step={2}
+        stepColor="bg-indigo-600"
+        title="Relancer — décrocher le paiement"
+        subtitle={toRelance.length > 0 ? `${toRelance.length} client${toRelance.length > 1 ? 's' : ''} en attente` : 'Rien en attente 🏆'}
+        count={toRelance.length}
         onPrev={relanceIdx > 0 ? () => setRelanceIdx(i => i - 1) : undefined}
         onNext={relanceIdx < toRelance.length - 1 ? () => setRelanceIdx(i => i + 1) : undefined}
-        labelLeft="Précédent" labelRight="Suivant"
+        total={toRelance.length}
       >
         {toRelance.length === 0 ? (
           <div className="absolute inset-0 bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 shadow-sm">
@@ -667,7 +702,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   {relanceInEnrich && (
                     <button onClick={syncRelanceToEnrich}
                       className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
-                      ← Enrichir {currentRelance.societe.split(' ')[0]}
+                      ① Identifier ce contact
                     </button>
                   )}
                   <div className="grid grid-cols-3 gap-2">
@@ -696,7 +731,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* Liens reset */}
       <div className="flex justify-center gap-6 text-xs text-gray-300">
-        {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} passé{skippedEnrich.size > 1 ? 's' : ''} (enrichir)</button>}
+        {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} passé{skippedEnrich.size > 1 ? 's' : ''} (identifier)</button>}
         {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
       </div>
 
@@ -993,7 +1028,7 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
 
 // ---- Modal Script d'appel ----
 function ModalScript({ data, onClose }: {
-  data: { type: 'enrichir' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string }
+  data: { type: 'identifier' | 'relancer', societe: string, montant: number, jours: number, statut: string, contact?: string }
   onClose: () => void
 }) {
   const [scriptIdx, setScriptIdx] = useState(0)
@@ -1039,7 +1074,7 @@ function ModalScript({ data, onClose }: {
     },
   ]
 
-  const scripts = data.type === 'enrichir' ? SCRIPTS_ENRICHIR : SCRIPTS_RELANCER
+  const scripts = data.type === 'identifier' ? SCRIPTS_ENRICHIR : SCRIPTS_RELANCER
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4">
