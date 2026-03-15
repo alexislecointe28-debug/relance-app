@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const { data: dossiers } = await supabase
     .from('dossiers')
-    .select('*, contact:contacts(id), factures(id)')
+    .select('*, contact:contacts(id, prenom, nom, email, telephone, fonction), factures(id)')
     .is('archived_at', null)
     .order('jours_retard', { ascending: false })
 
@@ -33,13 +33,14 @@ export default async function DashboardPage() {
     ...d,
     nb_factures: (d.factures as any[])?.length || 0,
     factures: undefined,
-    contact: undefined,
+    // Garder le contact avec tous ses champs (Supabase retourne un tableau)
+    contact: Array.isArray(d.contact) ? (d.contact[0] || null) : (d.contact || null),
   }))
 
   const total_montant = dossiersWithCount.reduce((s, d) => s + (d.montant_total || 0), 0)
   const dossiers_actifs = dossiersWithCount.filter(d => d.statut !== 'resolu').length
   const a_relancer = dossiersWithCount.filter(d => d.statut === 'a_relancer').length
-  const avec_contact = (dossiers || []).filter(d => d.contact && (d.contact as any[]).length > 0).length
+  const avec_contact = dossiersWithCount.filter(d => d.contact).length
   const pct_qualifies = dossiersWithCount.length > 0 ? Math.round((avec_contact / dossiersWithCount.length) * 100) : 0
 
   return (

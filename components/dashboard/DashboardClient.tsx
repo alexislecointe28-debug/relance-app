@@ -675,9 +675,12 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       )}
 
       {/* Modal relancer */}
-      {modalDossier && (
+      {modalDossier && (() => {
+        // Toujours prendre la version la plus récente du dossier depuis le state
+        const liveDossier = dossiers.find(d => d.id === modalDossier.id) || modalDossier
+        return (
         <ModalRelancer
-          dossier={modalDossier}
+          dossier={{ ...liveDossier, nb_factures: modalDossier.nb_factures } as any}
           initialType={modalType}
           onClose={() => setModalDossier(null)}
           onSaved={() => {
@@ -693,7 +696,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             router.refresh()
           }}
         />
-      )}
+        )
+      })()}
 
     </main>
   )
