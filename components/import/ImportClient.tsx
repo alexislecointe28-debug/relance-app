@@ -34,7 +34,7 @@ export default function ImportClient() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null)
-  const [mode, setMode] = useState<'excel' | 'manual'>('excel')
+  const [mode, setMode] = useState<Mode>('excel')
   const [manual, setManual] = useState<ParsedFacture>({
     societe: '', numero: '', montant_ttc: 0,
     date_facture: '', date_echeance: '', bon_commande: ''
@@ -158,14 +158,29 @@ export default function ImportClient() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'excel' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
               📊 Excel <span className="ml-1 text-xs text-emerald-600 font-semibold">Recommandé</span>
             </button>
+            <button onClick={() => setMode('pdf')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'pdf' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+              📄 PDF
+            </button>
             <button onClick={() => setMode('manual')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'manual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
-              ✏️ Saisie manuelle
+              ✏️ Manuel
             </button>
           </div>
 
           {mode === 'excel' && (
             <UploadZone loading={loading} onChange={handleExcelUpload} />
+          )}
+
+          {mode === 'pdf' && (
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-16 text-center bg-white">
+              <div className="text-5xl mb-4">📄</div>
+              <div className="font-semibold text-gray-700 mb-2">Import PDF</div>
+              <div className="text-sm text-gray-400 mb-4">Glissez votre facture PDF ici</div>
+              <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2 inline-block">
+                🚧 Fonctionnalité en cours de développement — disponible prochainement
+              </div>
+            </div>
           )}
 
           {mode === 'manual' && (
