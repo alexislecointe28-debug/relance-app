@@ -30,7 +30,7 @@ function getHeroText(montant: string) {
   if (h >= 9 && h < 12) return `La matinée appartient aux courageux. ${montant} attendent que t'en sois un.`
   if (h >= 12 && h < 14) return "Ton client mange bien. Lui il a pas payé mais il mange bien."
   if (h >= 14 && h < 18) return `L'heure de la sieste c'est pour tes concurrents. Toi t'as ${montant} à aller chercher.`
-  if (h >= 18 && h < 23) return "La journée est pas finie. Un dernier appel ?"
+  if (h >= 18 && h < 23) return "La journée n'est pas finie. Un dernier appel ?"
   return "T'aurais mieux fait de rappeler plutôt que scroller."
 }
 
