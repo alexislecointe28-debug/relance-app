@@ -54,10 +54,18 @@ export async function POST(request: Request) {
       .from('dossiers')
       .select('id', { count: 'exact', head: true })
       .eq('organisation_id', membre.organisation_id)
-    if ((count || 0) >= LIMITE_DEMO) {
+    const currentCount = count || 0
+    if (currentCount >= LIMITE_DEMO) {
       return NextResponse.json({ error: 'LIMITE_DEMO' }, { status: 403 })
     }
+    // Limiter le nombre de nouveaux dossiers créables
+    const remaining = LIMITE_DEMO - currentCount
+    // On va tronquer les factures pour ne créer que `remaining` nouveaux dossiers max
+    // (on tronque après groupement dans la suite)
+    const _demoRemaining = remaining
+    Object.assign(request, { _demoRemaining })
   }
+  const demoRemaining = (request as any)._demoRemaining ?? Infinity
 
   // Récupérer tous les numéros de factures existants pour cette org
   const { data: existingFactures } = await supabase
@@ -90,8 +98,14 @@ export async function POST(request: Request) {
     grouped[societe].push(f)
   }
 
+  // Limiter le nombre de dossiers à créer pour le plan démo
+  let groupedEntries = Object.entries(grouped)
+  if (demoRemaining !== Infinity) {
+    groupedEntries = groupedEntries.slice(0, demoRemaining)
+  }
+
   // Créer ou mettre à jour les dossiers
-  for (const [societe, facturesList] of Object.entries(grouped)) {
+  for (const [societe, facturesList] of groupedEntries) {
     const montantTotal = facturesList.reduce((s, f) => s + (parseFloat(f.montant_ttc) || 0), 0)
     const dateEcheances = facturesList
       .map(f => normalizeDate(f.date_echeance))
