@@ -470,6 +470,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
             <div
               onTouchStart={e => { startXE.current = e.touches[0].clientX; setSwipingE(true) }}
               onTouchMove={e => {
+                if (enrichMode) return // laisser scroller le formulaire
                 const dx = e.touches[0].clientX - startXE.current
                 if (Math.abs(dx) > 10) e.preventDefault()
                 setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left')
@@ -484,7 +485,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   ? `translateX(${swipeDirE === 'right' ? '110%' : '-110%'}) rotate(${swipeDirE === 'right' ? '8deg' : '-8deg'})`
                   : `translateX(${swipeXE}px) rotate(${swipeXE * 0.04}deg)`,
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
-                touchAction: 'none',
+                touchAction: enrichMode ? 'pan-y' : 'none',
               }}
               className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
             >
