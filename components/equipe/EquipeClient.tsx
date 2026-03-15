@@ -117,6 +117,17 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
       )}
 
       {/* Affichage identifiants */}
+      {plan === 'agence' && (
+        <a href="/equipe/assignations"
+          className="flex items-center justify-between w-full p-4 mb-6 bg-indigo-50 border border-indigo-200 rounded-2xl hover:bg-indigo-100 transition-colors group">
+          <div>
+            <div className="font-semibold text-indigo-800 text-sm">Gérer les assignations</div>
+            <div className="text-xs text-indigo-500 mt-0.5">Attribuer les dossiers à vos collaborateurs</div>
+          </div>
+          <span className="text-indigo-400 group-hover:translate-x-0.5 transition-transform">→</span>
+        </a>
+      )}
+
       {credentials && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6 animate-slide-up">
           <div className="flex items-start justify-between">
