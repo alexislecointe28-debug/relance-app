@@ -90,7 +90,7 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
 
       {/* Formulaire invitation */}
       {showForm && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6 animate-slide-up">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 mb-6 animate-slide-up">
           <h2 className="font-semibold text-gray-900 mb-1">Inviter par email</h2>
           <p className="text-sm text-gray-500 mb-4">Un compte sera créé. Vous recevrez les identifiants à transmettre au collaborateur.</p>
           <form onSubmit={handleInvite} className="flex gap-3">
@@ -104,7 +104,7 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
               autoFocus
             />
             <button type="submit" disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex-shrink-0">
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 flex-shrink-0">
               {loading ? '…' : 'Créer le compte'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
@@ -137,7 +137,7 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
                 <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">{credentials.password}</code>
                 <button
                   onClick={() => navigator.clipboard.writeText(credentials.password)}
-                  className="text-xs text-blue-600 hover:text-blue-700"
+                  className="text-xs text-indigo-600 hover:text-blue-700"
                 >
                   Copier
                 </button>
@@ -164,7 +164,7 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
               <tr key={membre.id} className="hover:bg-gray-50">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-indigo-600 text-sm font-semibold">
                       {(membre.prenom?.[0] || membre.email?.[0] || '?').toUpperCase()}
                     </div>
                     <div className="text-sm font-medium text-gray-900">

@@ -166,7 +166,7 @@ export default function DossierClient({ dossier: initial }: Props) {
           <div className="bg-white border border-gray-200 rounded-2xl p-5 lg:sticky lg:top-20 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-sm text-gray-900">Contact comptabilité</h2>
-              <button onClick={() => setModal('contact')} className="text-xs text-blue-600 hover:text-blue-700">
+              <button onClick={() => setModal('contact')} className="text-xs text-indigo-600 hover:text-blue-700">
                 {dossier.contact ? 'Modifier' : 'Ajouter'}
               </button>
             </div>
@@ -177,7 +177,7 @@ export default function DossierClient({ dossier: initial }: Props) {
                   {dossier.contact.fonction && <div className="text-xs text-gray-400">{dossier.contact.fonction}</div>}
                 </div>
                 {dossier.contact.email && (
-                  <a href={`mailto:${dossier.contact.email}`} className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+                  <a href={`mailto:${dossier.contact.email}`} className="flex items-center gap-2 text-sm text-indigo-600 hover:text-blue-700">
                     <span>✉️</span> {dossier.contact.email}
                   </a>
                 )}
@@ -283,7 +283,7 @@ function ModalAppel({ dossierId, onClose, onSaved }: { dossierId: string; onClos
         </div>
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
-          <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
+          <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50">
             {loading ? '…' : 'Noté →'}
           </button>
         </div>
@@ -466,7 +466,7 @@ function ModalContact({ dossierId, contact, onClose, onSaved }: { dossierId: str
         ))}
         <div className="flex gap-3 pt-2">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">Annuler</button>
-          <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50">
+          <button onClick={handleSave} disabled={loading} className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50">
             {loading ? '…' : 'Noté →'}
           </button>
         </div>
