@@ -809,6 +809,35 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
         {/* ---- APPEL ---- */}
         {type === 'appel' && (
           <>
+            {/* Contact info */}
+            {dossier.contact ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-xl">👤</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {dossier.contact.prenom} {dossier.contact.nom}
+                    {dossier.contact.fonction && <span className="text-gray-400 font-normal"> · {dossier.contact.fonction}</span>}
+                  </div>
+                  {dossier.contact.telephone && (
+                    <a href={`tel:${dossier.contact.telephone}`}
+                      className="text-sm text-indigo-600 font-mono hover:underline">
+                      📞 {dossier.contact.telephone}
+                    </a>
+                  )}
+                  {!dossier.contact.telephone && (
+                    <div className="text-xs text-amber-500">Pas de téléphone enregistré</div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-xl">⚠️</span>
+                <div className="text-sm text-amber-700">
+                  Aucun contact pour ce dossier.
+                  <span className="block text-xs mt-0.5">Va sur la carte Enrichir pour ajouter un contact.</span>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Statut</label>
               <div className="grid grid-cols-2 gap-2">
