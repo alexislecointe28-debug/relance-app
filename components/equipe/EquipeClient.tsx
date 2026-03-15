@@ -12,7 +12,10 @@ interface Membre {
   created_at: string
 }
 
-export default function EquipeClient({ membres: initial, orgNom }: { membres: Membre[], orgNom: string }) {
+export default function EquipeClient({ membres: initial, orgNom, plan }: { membres: Membre[], orgNom: string, plan: string }) {
+  const LIMITES: Record<string, number> = { demo: 1, solo: 3, agence: Infinity }
+  const limiteCollabs = LIMITES[plan] ?? 1
+  const limiteAtteinte = limiteCollabs !== Infinity && initial.length >= limiteCollabs
   const [membres, setMembres] = useState(initial)
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,7 +36,11 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
 
     const data = await res.json()
     if (!res.ok) {
-      setError(data.error || "Erreur lors de l'invitation")
+      if (data.error === 'LIMITE_COLLABS') {
+        setError(`Limite atteinte — le plan ${plan === 'solo' ? 'Solo' : 'Démo'} est limité à ${data.limite} collaborateur${data.limite > 1 ? 's' : ''}. Passez au plan Agence pour inviter davantage.`)
+      } else {
+        setError(data.error || "Erreur lors de l'invitation")
+      }
     } else {
       setCredentials({ email, password: data.tempPassword })
       setMembres(prev => [...prev, {
@@ -50,20 +57,35 @@ export default function EquipeClient({ membres: initial, orgNom }: { membres: Me
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Équipe</h1>
           <p className="text-gray-500 text-sm">{orgNom} · {membres.length} membre(s)</p>
+          {limiteCollabs !== Infinity && (
+            <div className="flex items-center gap-1.5 mt-1">
+              {[...Array(limiteCollabs)].map((_, i) => (
+                <div key={i} className={`h-1.5 w-6 rounded-full ${i < membres.length ? 'bg-indigo-500' : 'bg-gray-200'}`} />
+              ))}
+              <span className="text-xs text-gray-400 ml-1">{membres.length}/{limiteCollabs} collaborateurs</span>
+            </div>
+          )}
         </div>
+        {limiteAtteinte ? (
+          <a href="/pricing"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold">
+            🚀 Passer Agence
+          </a>
+        ) : (
         <button
           onClick={() => { setShowForm(!showForm); setCredentials(null); setError('') }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M5 12h14"/>
           </svg>
           Inviter un collaborateur
         </button>
+        )}
       </div>
 
       {/* Formulaire invitation */}

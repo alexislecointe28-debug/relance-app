@@ -46,7 +46,7 @@ export default function LegalPage() {
 
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-3">6. Tarifs et facturation</h2>
-          <p>Les abonnements sont facturés mensuellement via Stripe. L&apos;abonnement est résiliable à tout moment depuis les paramètres du compte, avec effet à la fin de la période en cours. Aucun remboursement prorata n&apos;est effectué sauf obligation légale.</p>
+          <p>Les abonnements sont facturés mensuellement via Stripe. L&apos;abonnement est résiliable à tout moment depuis les paramètres du compte, avec effet à la fin de la période en cours. Aucun remboursement prorata n&apos;est effectué sauf obligation légale. Plan Démo : gratuit, limité à 3 dossiers et 1 utilisateur. Plan Solo : 49€/mois, 300 dossiers maximum, 3 collaborateurs maximum. Plan Agence : 199€/mois, dossiers et collaborateurs illimités.</p>
         </div>
 
         <div>

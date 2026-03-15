@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic'
 export default async function EquipePage() {
   const supabase = createServerSupabaseClient()
   const { data: membres } = await supabase.from('membres').select('*').order('created_at', { ascending: true })
-  const { data: org } = await supabase.from('organisations').select('nom').single()
+  const { data: org } = await supabase.from('organisations').select('nom, plan').single()
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <EquipeClient membres={(membres || []) as any} orgNom={org?.nom || ''} />
+      <EquipeClient membres={(membres || []) as any} orgNom={org?.nom || ''} plan={org?.plan || 'demo'} />
     </div>
   )
 }

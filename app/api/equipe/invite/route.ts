@@ -20,6 +20,26 @@ export async function POST(request: Request) {
   const { email } = await request.json()
   if (!email) return NextResponse.json({ error: 'Email requis' }, { status: 400 })
 
+  // Vérifier la limite de collaborateurs selon le plan
+  const { data: org } = await supabase
+    .from('organisations')
+    .select('plan')
+    .eq('id', membre.organisation_id)
+    .single()
+
+  const LIMITES_COLLABS: Record<string, number> = { demo: 1, solo: 3, agence: Infinity }
+  const limiteCollabs = LIMITES_COLLABS[org?.plan || 'demo'] ?? 1
+
+  if (limiteCollabs !== Infinity) {
+    const { count } = await supabase
+      .from('membres')
+      .select('id', { count: 'exact', head: true })
+      .eq('organisation_id', membre.organisation_id)
+    if ((count || 0) >= limiteCollabs) {
+      return NextResponse.json({ error: 'LIMITE_COLLABS', plan: org?.plan, limite: limiteCollabs }, { status: 403 })
+    }
+  }
+
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
