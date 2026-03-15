@@ -80,7 +80,8 @@ export default function ImportClient() {
         const data = new Uint8Array(ev.target?.result as ArrayBuffer)
         const wb = XLSX.read(data, { type: 'array', cellDates: true })
         const sheet = wb.Sheets[wb.SheetNames[0]]
-        const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, raw: false, dateNF: 'dd/mm/yyyy' })
+        // raw: false pour que les dates soient formatées, mais on garde les nombres tels quels
+        const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, raw: false, dateNF: 'dd/mm/yyyy', defval: '' })
         const h = (rows[0] as string[]) || []
         const dataRows = rows.slice(1).filter((r: any) => r.some((c: any) => c)) as string[][]
         processFile(dataRows, h)

@@ -97,7 +97,24 @@ export function detectColumns(headers: string[]): Record<string, number> {
 }
 
 export function parseAmount(val: string): number {
-  return parseFloat(val.replace(/[€\s]/g, '').replace(',', '.')) || 0
+  if (!val) return 0
+  let s = String(val).trim()
+  // Retirer symboles monétaires et espaces (y compris insécables)
+  s = s.replace(/[€$£\u00a0\s]/g, '')
+  if (!s) return 0
+  // Format européen : 1.234,56 ou 1 234,56
+  if (/,\d{2}$/.test(s)) {
+    s = s.replace(/\./g, '').replace(',', '.')
+  }
+  // Format US : 1,234.56
+  else if (/\.\d{2}$/.test(s) && s.includes(',')) {
+    s = s.replace(/,/g, '')
+  }
+  // Virgule seule comme décimale : 1234,5
+  else if (s.includes(',') && !s.includes('.')) {
+    s = s.replace(',', '.')
+  }
+  return parseFloat(s) || 0
 }
 
 export function addDays(date: Date, days: number): Date {
