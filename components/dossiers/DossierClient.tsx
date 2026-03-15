@@ -553,7 +553,7 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/30 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/30 animate-fade-in overflow-y-auto">
       <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-md p-6 animate-slide-up shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-semibold text-gray-900">{title}</h2>
