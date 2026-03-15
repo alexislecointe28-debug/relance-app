@@ -534,6 +534,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
               onSwipeLeft={skipEnrich}
               onSwipeRight={skipEnrich}
               onSwipeX={dx => { setSwipeXE(dx); setSwipeDirE(dx > 0 ? 'right' : 'left'); setSwipingE(dx !== 0) }}
+              hintKey="enrichir"
               style={{
                 transform: exitingE
                   ? `translateX(${swipeDirE === 'right' ? '110%' : '-110%'}) rotate(${swipeDirE === 'right' ? '8deg' : '-8deg'})`
@@ -661,6 +662,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
               onSwipeLeft={skipRelance}
               onSwipeRight={skipRelance}
               onSwipeX={dx => { setSwipeXR(dx); setSwipeDirR(dx > 0 ? 'right' : 'left'); setSwipingR(dx !== 0) }}
+              hintKey="relancer"
               style={{
                 transform: exitingR
                   ? `translateX(${swipeDirR === 'right' ? '110%' : '-110%'}) rotate(${swipeDirR === 'right' ? '8deg' : '-8deg'})`
