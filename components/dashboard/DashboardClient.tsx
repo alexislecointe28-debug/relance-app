@@ -86,45 +86,29 @@ function BadgesList({ scoreTotal, streak }: { scoreTotal: number, streak: number
 }
 
 function CardStack({
-  title, subtitle, step, stepColor, count, children, onPrev, onNext, total
+  count, children, onPrev, onNext, total, accent
 }: {
-  title: string, subtitle: string, step: number, stepColor: string, count: number,
-  children: React.ReactNode, onPrev?: () => void, onNext?: () => void, total?: number
+  count: number, children: React.ReactNode,
+  onPrev?: () => void, onNext?: () => void, total?: number, accent: string
 }) {
   return (
     <section>
-      {/* Header étape numérotée */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold shrink-0 ${stepColor}`}>
-          {step}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-gray-900">{title}</div>
-          <div className="text-xs text-gray-400">{subtitle}</div>
-        </div>
-        {count > 0 && (
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stepColor} text-white`}>{count}</span>
-        )}
-      </div>
-      {/* Connecteur entre étapes — seulement sur l'étape 1 */}
-      <div className="relative" style={{ height: '420px' }}>
+      <div className="relative" style={{ height: '460px' }}>
         {children}
       </div>
-      {(onPrev || onNext) && (
-        <div className="flex items-center justify-center gap-3 mt-3">
-          <button onClick={onPrev} disabled={!onPrev}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-700 disabled:opacity-30 transition-all">
-            ←
-          </button>
-          {total && total > 1 && (
-            <span className="text-xs text-gray-400">{(onPrev ? 1 : 0) + 1} / {total}</span>
-          )}
-          <button onClick={onNext} disabled={!onNext}
-            className={`w-9 h-9 flex items-center justify-center rounded-full shadow-sm text-white disabled:opacity-30 transition-all ${stepColor}`}>
-            →
-          </button>
-        </div>
-      )}
+      <div className="flex items-center justify-between mt-3 px-1">
+        <button onClick={onPrev} disabled={!onPrev}
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-gray-200 shadow-sm text-gray-400 hover:text-gray-600 disabled:opacity-20 transition-all text-sm">
+          ←
+        </button>
+        {total && total > 0 ? (
+          <span className="text-xs text-gray-400 font-medium">{!onPrev ? 1 : total - count + 1} / {total}</span>
+        ) : <span />}
+        <button onClick={onNext} disabled={!onNext}
+          className={`w-9 h-9 flex items-center justify-center rounded-full shadow-md text-white disabled:opacity-20 transition-all text-sm ${accent}`}>
+          →
+        </button>
+      </div>
     </section>
   )
 }
@@ -490,30 +474,31 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
       )}
 
       {/* === 2 PILES CÔTE À CÔTE DESKTOP === */}
-      {/* Indicateur de progression étapes */}
-      <div className="hidden sm:flex items-center gap-2 mb-2 px-1">
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center text-white text-xs font-bold">1</div>
-          <span className="text-xs font-medium text-violet-600">Identifier</span>
+      {/* STEPPER */}
+      <div className="flex items-stretch gap-0 mb-5 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+        <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-orange-50 border-r border-orange-100">
+          <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm">1</div>
+          <div>
+            <div className="text-xs font-bold text-orange-700 uppercase tracking-wide">Identifier</div>
+            <div className="text-xs text-orange-500">{toEnrich.length > 0 ? `${toEnrich.length} contact${toEnrich.length > 1 ? 's' : ''} à trouver` : 'Tous identifiés ✓'}</div>
+          </div>
         </div>
-        <div className="flex-1 flex items-center gap-1">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-gray-300 text-xs">→</span>
-          <div className="h-px flex-1 bg-gray-200" />
+        <div className="flex items-center px-2 bg-gray-50">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">2</div>
-          <span className="text-xs font-medium text-indigo-600">Relancer</span>
+        <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-indigo-50">
+          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm">2</div>
+          <div>
+            <div className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Relancer</div>
+            <div className="text-xs text-indigo-500">{toRelance.length > 0 ? `${toRelance.length} client${toRelance.length > 1 ? 's' : ''} en attente` : 'File vide 🏆'}</div>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
       {/* === PILE ENRICHIR === */}
       <CardStack
-        step={1}
-        stepColor="bg-violet-500"
-        title="Identifier — qui appeler ?"
-        subtitle={toEnrich.length > 0 ? `${toEnrich.length} contact${toEnrich.length > 1 ? 's' : ''} à trouver` : 'Tous identifiés ✓'}
+        accent="bg-orange-500"
         count={toEnrich.length}
         onPrev={enrichIdx > 0 ? () => setEnrichIdx(i => i - 1) : undefined}
         onNext={enrichIdx < toEnrich.length - 1 ? () => setEnrichIdx(i => i + 1) : undefined}
@@ -538,51 +523,58 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   : enrichMode ? 'none'
                   : `translateX(${swipeXE}px) rotate(${swipeXE * 0.04}deg)`,
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
+                borderTop: '4px solid #f97316',
               }}
-              className="absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in"
+              className="absolute inset-0 bg-white rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none animate-fade-in overflow-hidden"
             >
-              {swipeXE > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">PASSER →</div>}
-              {swipeXE < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg]">PASSER →</div>}
+              {swipeXE > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg] z-10">SUIVANT →</div>}
+              {swipeXE < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg] z-10">SUIVANT →</div>}
               <div className="p-5 h-full flex flex-col">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div>
-                    <Link href={`/dossiers/${currentEnrich.id}`} onClick={e => e.stopPropagation()} className="font-bold text-lg text-gray-900 hover:underline">
+                {/* Header carte */}
+                <div className="flex items-start justify-between gap-2 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">① Identifier</span>
+                    </div>
+                    <Link href={`/dossiers/${currentEnrich.id}`} onClick={e => e.stopPropagation()} className="font-black text-xl text-gray-900 hover:text-orange-600 transition-colors leading-tight block">
                       {currentEnrich.societe}
                     </Link>
-                    <div className="text-xs text-gray-400 mt-0.5">Pas encore de contact connu</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-xl text-gray-900">{formatMontant(currentEnrich.montant_total)}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{currentEnrich.jours_retard}j</div>
+                  <div className="text-right shrink-0">
+                    <div className="font-black text-2xl text-gray-900 leading-none">{formatMontant(currentEnrich.montant_total)}</div>
+                    <div className="text-xs text-gray-400 mt-1 font-medium">{currentEnrich.jours_retard}j de retard</div>
                   </div>
                 </div>
 
                 {!enrichMode ? (
                   <>
-                    <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
-                      <div className="text-4xl mb-3">👤</div>
-                      <div className="text-sm text-gray-600 font-medium">Qui tu vas harceler chez {currentEnrich.societe} ?</div>
-                      <div className="text-xs text-gray-400 mt-1">Sans contact, pas de relance. Simple.</div>
+                    {/* Zone centrale */}
+                    <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-4">
+                      <div className="w-16 h-16 rounded-full bg-orange-50 border-2 border-dashed border-orange-200 flex items-center justify-center mb-4">
+                        <span className="text-2xl">🔍</span>
+                      </div>
+                      <div className="text-base font-bold text-gray-800 mb-1">Qui appeler chez {currentEnrich.societe} ?</div>
+                      <div className="text-xs text-gray-400">Trouve le nom du responsable compta ou DAF</div>
                     </div>
-                    <div className="mt-auto space-y-2">
-                      <button onClick={() => setScriptModal({ type: 'identifier', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
-                        className="w-full flex items-center justify-center gap-2 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-100 transition-colors">
-                        📜 Script d'appel
-                      </button>
+                    <div className="space-y-2">
                       {enrichInRelance && (
                         <button onClick={syncEnrichToRelance}
-                          className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
-                          ⚡ Relancer maintenant →
+                          className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-xl text-xs font-semibold hover:bg-indigo-100 transition-colors">
+                          ⚡ Déjà un contact → Relancer maintenant
                         </button>
                       )}
-                      <div className="grid grid-cols-2 gap-3">
+                      <button onClick={() => setScriptModal({ type: 'identifier', societe: currentEnrich.societe, montant: currentEnrich.montant_total, jours: currentEnrich.jours_retard, statut: currentEnrich.statut })}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-xs font-semibold hover:bg-orange-100 transition-colors">
+                        📞 Script pour trouver le contact
+                      </button>
+                      <div className="grid grid-cols-2 gap-2">
                         <button onClick={skipEnrich}
-                          className="flex items-center justify-center gap-2 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-400 rounded-xl font-semibold text-sm transition-all">
-                          ⏭️ Passer
+                          className="py-3 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl font-semibold text-sm transition-all border border-gray-200">
+                          Passer
                         </button>
                         <button onClick={() => setEnrichMode(true)}
-                          className="flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-sm transition-colors">
-                          🎯 Enrichir
+                          className="py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-sm transition-colors">
+                          + Ajouter contact
                         </button>
                       </div>
                     </div>
@@ -633,10 +625,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
       {/* === PILE RELANCER === */}
       <CardStack
-        step={2}
-        stepColor="bg-indigo-600"
-        title="Relancer — décrocher le paiement"
-        subtitle={toRelance.length > 0 ? `${toRelance.length} client${toRelance.length > 1 ? 's' : ''} en attente` : 'Rien en attente 🏆'}
+        accent="bg-indigo-600"
         count={toRelance.length}
         onPrev={relanceIdx > 0 ? () => setRelanceIdx(i => i - 1) : undefined}
         onNext={relanceIdx < toRelance.length - 1 ? () => setRelanceIdx(i => i + 1) : undefined}
@@ -660,37 +649,60 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
                   ? `translateX(${swipeDirR === 'right' ? '110%' : '-110%'}) rotate(${swipeDirR === 'right' ? '8deg' : '-8deg'})`
                   : `translateX(${swipeXR}px) rotate(${swipeXR * 0.04}deg)`,
                 transition: exitingR || (!swipingR && swipeXR !== 0) ? 'transform 0.3s ease' : 'none',
+                borderTop: `4px solid ${currentRelance.jours_retard > 90 ? '#ef4444' : currentRelance.jours_retard > 30 ? '#f59e0b' : '#6366f1'}`,
               }}
-              className={`absolute inset-0 bg-white border border-gray-200 rounded-2xl shadow-lg ${colorsR.glow} cursor-grab active:cursor-grabbing select-none`}
+              className="absolute inset-0 bg-white rounded-2xl shadow-lg cursor-grab active:cursor-grabbing select-none overflow-hidden"
             >
-              {swipeXR > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg]">PASSER →</div>}
-              {swipeXR < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg]">PASSER →</div>}
+              {swipeXR > 30 && <div className="absolute top-4 left-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg] z-10">SUIVANT →</div>}
+              {swipeXR < -30 && <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[12deg] z-10">SUIVANT →</div>}
               <div className="p-5 h-full flex flex-col">
-                <div className="flex items-start justify-between gap-3 mb-3">
+                {/* Header carte */}
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex-1 min-w-0">
-                    <Link href={`/dossiers/${currentRelance.id}`} onClick={e => e.stopPropagation()} className="font-bold text-lg text-gray-900 hover:underline truncate block">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest">② Relancer</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatutDossierColor(currentRelance.statut)}`}>
+                        {getStatutDossierLabel(currentRelance.statut)}
+                      </span>
+                    </div>
+                    <Link href={`/dossiers/${currentRelance.id}`} onClick={e => e.stopPropagation()} className="font-black text-xl text-gray-900 hover:text-indigo-600 transition-colors leading-tight block truncate">
                       {currentRelance.societe}
                     </Link>
-                    <div className="text-xs text-gray-400 mt-0.5">{contextLabel(currentRelance.jours_retard)}</div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="font-bold text-xl text-gray-900">{formatMontant(currentRelance.montant_total)}</div>
-                    <div className={`text-xs font-semibold px-2 py-0.5 rounded-md border mt-1 ${colorsR.badge}`}>{currentRelance.jours_retard}j</div>
+                  <div className="text-right shrink-0">
+                    <div className="font-black text-2xl text-gray-900 leading-none">{formatMontant(currentRelance.montant_total)}</div>
+                    <div className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-full border ${colorsR.badge}`}>{currentRelance.jours_retard}j</div>
                   </div>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full mb-3 overflow-hidden">
-                  <div className={`h-full rounded-full ${colorsR.bar}`} style={{ width: `${Math.min(100, (currentRelance.jours_retard / 180) * 100)}%` }} />
+                {/* Barre urgence */}
+                <div className="h-1 bg-gray-100 rounded-full mb-3 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${colorsR.bar}`} style={{ width: `${Math.min(100, (currentRelance.jours_retard / 180) * 100)}%` }} />
                 </div>
-                <div className="mb-3 flex items-center gap-2 flex-wrap">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${getStatutDossierColor(currentRelance.statut)}`}>
-                    {getStatutDossierLabel(currentRelance.statut)}
-                  </span>
-                  {currentRelance.contact && (
-                    <span className="text-xs text-gray-400">👤 {currentRelance.contact.prenom} {currentRelance.contact.nom}</span>
-                  )}
-                </div>
-                <div className="flex-1 flex items-center justify-center px-2">
-                  <p className="text-sm text-gray-500 text-center italic leading-snug">
+                {/* Contact */}
+                {currentRelance.contact ? (
+                  <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm shrink-0">
+                      {(currentRelance.contact.prenom?.[0] || '?').toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-gray-900">{currentRelance.contact.prenom} {currentRelance.contact.nom}</div>
+                      {currentRelance.contact.telephone ? (
+                        <a href={`tel:${currentRelance.contact.telephone}`} onClick={e => e.stopPropagation()}
+                          className="text-xs text-emerald-600 font-mono hover:text-emerald-700 font-semibold">
+                          📞 {currentRelance.contact.telephone}
+                        </a>
+                      ) : <div className="text-xs text-gray-400">{currentRelance.contact.fonction || 'Pas de tél'}</div>}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mb-3">
+                    <span className="text-amber-400">⚠️</span>
+                    <div className="text-xs text-amber-700 font-medium">Pas encore de contact — identifie d'abord</div>
+                  </div>
+                )}
+                {/* Phrase motivation */}
+                <div className="flex-1 flex items-center justify-center px-1">
+                  <p className="text-xs text-gray-400 text-center italic leading-relaxed">
                     "{getMotivation(currentRelance.id)}"
                   </p>
                 </div>
