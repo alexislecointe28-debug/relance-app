@@ -16,7 +16,7 @@ export default async function AssignationsPage() {
 
   const { data: dossiers } = await supabase
     .from('dossiers')
-    .select('id, societe, montant_total, jours_retard, statut, assigned_to, assignee:membres!dossiers_assigned_to_fkey(id, prenom, nom, email)')
+    .select('id, societe, montant_total, jours_retard, statut, assigned_to')
     .is('archived_at', null)
     .order('jours_retard', { ascending: false })
 
