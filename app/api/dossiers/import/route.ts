@@ -39,6 +39,26 @@ export async function POST(request: Request) {
   const { factures } = await request.json()
   if (!factures?.length) return NextResponse.json({ error: 'Aucune facture' }, { status: 400 })
 
+  // Vérifier le plan et la limite démo
+  const { data: org } = await supabase
+    .from('organisations')
+    .select('plan')
+    .eq('id', membre.organisation_id)
+    .single()
+
+  const plan = org?.plan || 'demo'
+  const LIMITE_DEMO = 3
+
+  if (plan === 'demo') {
+    const { count } = await supabase
+      .from('dossiers')
+      .select('id', { count: 'exact', head: true })
+      .eq('organisation_id', membre.organisation_id)
+    if ((count || 0) >= LIMITE_DEMO) {
+      return NextResponse.json({ error: 'LIMITE_DEMO' }, { status: 403 })
+    }
+  }
+
   // Récupérer tous les numéros de factures existants pour cette org
   const { data: existingFactures } = await supabase
     .from('factures')
