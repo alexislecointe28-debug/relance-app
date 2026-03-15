@@ -190,14 +190,10 @@ export default function ImportClient() {
           )}
 
           {mode === 'pdf' && (
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-16 text-center bg-white">
-              <div className="text-5xl mb-4">📄</div>
-              <div className="font-semibold text-gray-700 mb-2">Import PDF</div>
-              <div className="text-sm text-gray-400 mb-4">Glissez votre facture PDF ici</div>
-              <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2 inline-block">
-                🚧 Fonctionnalité en cours de développement — disponible prochainement
-              </div>
-            </div>
+            <PdfUploadZone loading={loading} onParsed={(rows) => {
+              setParsed(rows)
+              setStep('preview')
+            }} onError={setError} />
           )}
 
           {mode === 'manual' && (
@@ -405,6 +401,165 @@ function UploadZone({ onChange, loading }: {
       {!loading && (
         <>
           <div className="text-sm text-gray-400 mb-4">.xlsx ou .xls · les colonnes sont détectées automatiquement</div>
+          <div className="inline-block px-5 py-2 bg-indigo-600 text-white text-sm rounded-xl font-semibold">
+            Choisir un fichier
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ---- Composant upload PDF avec parsing réel ----
+function PdfUploadZone({ loading, onParsed, onError }: {
+  loading?: boolean
+  onParsed: (rows: ParsedFacture[]) => void
+  onError: (msg: string) => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [dragOver, setDragOver] = useState(false)
+  const [parsing, setParsing] = useState(false)
+
+  async function parsePdf(file: File) {
+    setParsing(true)
+    try {
+      const pdfjsLib = await import('pdfjs-dist')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+      const arrayBuffer = await file.arrayBuffer()
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+
+      let fullText = ''
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const pageText = content.items.map((item: any) => item.str).join(' ')
+        fullText += pageText + '\n'
+      }
+
+      const factures = extractFacturesFromText(fullText)
+      if (factures.length === 0) {
+        onError("Aucune facture détectée dans ce PDF. Vérifiez que c'est un PDF numérique (pas un scan).")
+      } else {
+        onParsed(factures)
+      }
+    } catch (err: any) {
+      onError("Erreur lors de la lecture du PDF : " + err.message)
+    }
+    setParsing(false)
+  }
+
+  function extractFacturesFromText(text: string): ParsedFacture[] {
+    const factures: ParsedFacture[] = []
+    const lines = text.split(/\n|\r/).map(l => l.trim()).filter(Boolean)
+
+    // Patterns pour détecter les données
+    const piecePat = /(?:FA[CT]|FAC|INV|FACT)[- ]?[\d]{4,}/i
+    const montantPat = /(\d{1,3}(?:[ .\u00a0]\d{3})*(?:[,\.]\d{2})?)\s*€?/
+    const datePat = /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/
+    const societePat = /(?:client|société|destinataire|facturé à)[:\s]+([A-Z][^\n]+)/i
+
+    let currentFacture: Partial<ParsedFacture> = {}
+    let inFacture = false
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+
+      // Détecter numéro de pièce → début d'une facture
+      const pieceMatch = line.match(piecePat)
+      if (pieceMatch) {
+        if (currentFacture.numero && currentFacture.montant_ttc) {
+          factures.push({
+            societe: currentFacture.societe || 'Inconnu',
+            numero: currentFacture.numero,
+            montant_ttc: currentFacture.montant_ttc,
+            date_facture: currentFacture.date_facture || '',
+            date_echeance: currentFacture.date_echeance || '',
+            bon_commande: '',
+            _selected: true,
+          })
+        }
+        currentFacture = { numero: pieceMatch[0] }
+        inFacture = true
+      }
+
+      if (!inFacture) continue
+
+      // Société
+      const societeMatch = line.match(societePat)
+      if (societeMatch && !currentFacture.societe) {
+        currentFacture.societe = societeMatch[1].trim()
+      }
+
+      // Dates
+      const dates = Array.from(line.matchAll(new RegExp(datePat.source, 'g')))
+      if (dates.length > 0) {
+        const d = dates[0]
+        const formatted = `${d[1].padStart(2,'0')}/${d[2].padStart(2,'0')}/${d[3].length === 2 ? '20' + d[3] : d[3]}`
+        if (!currentFacture.date_facture) currentFacture.date_facture = formatted
+        else if (!currentFacture.date_echeance && dates[1]) {
+          const d2 = dates[1]
+          currentFacture.date_echeance = `${d2[1].padStart(2,'0')}/${d2[2].padStart(2,'0')}/${d2[3].length === 2 ? '20' + d2[3] : d2[3]}`
+        }
+      }
+
+      // Montant TTC (chercher "total" ou "ttc" sur la ligne)
+      if (/total|ttc|net à payer|montant/i.test(line) && !currentFacture.montant_ttc) {
+        const montMatch = line.match(montantPat)
+        if (montMatch) {
+          currentFacture.montant_ttc = parseAmount(montMatch[1])
+        }
+      }
+    }
+
+    // Ajouter la dernière facture
+    if (currentFacture.numero && currentFacture.montant_ttc) {
+      factures.push({
+        societe: currentFacture.societe || 'Inconnu',
+        numero: currentFacture.numero,
+        montant_ttc: currentFacture.montant_ttc,
+        date_facture: currentFacture.date_facture || '',
+        date_echeance: currentFacture.date_echeance || '',
+        bon_commande: '',
+        _selected: true,
+      })
+    }
+
+    return factures
+  }
+
+  async function handleFile(file: File) {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      onError('Veuillez sélectionner un fichier PDF')
+      return
+    }
+    await parsePdf(file)
+  }
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={e => {
+        e.preventDefault()
+        setDragOver(false)
+        const file = e.dataTransfer.files[0]
+        if (file) handleFile(file)
+      }}
+      className={`border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-all ${
+        dragOver ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/40'
+      }`}
+    >
+      <input ref={inputRef} type="file" accept=".pdf" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
+      <div className="text-5xl mb-4">{parsing ? '⏳' : '📄'}</div>
+      <div className="font-semibold text-gray-700 mb-1">
+        {parsing ? 'Extraction des données...' : 'Glisse ton fichier PDF ici'}
+      </div>
+      {!parsing && (
+        <>
+          <div className="text-sm text-gray-400 mb-4">.pdf · PDF numérique uniquement (pas de scan)</div>
           <div className="inline-block px-5 py-2 bg-indigo-600 text-white text-sm rounded-xl font-semibold">
             Choisir un fichier
           </div>
