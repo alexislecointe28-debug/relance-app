@@ -12,7 +12,7 @@ export default function LegalPage() {
 
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-3">1. Éditeur</h2>
-          <p>Paynelope est un service édité par Alexis Lecointe, auto-entrepreneur — SIRET : 48164072000027</p>
+          <p>Paynelope est un service édité par un auto-entrepreneur basé en France — SIRET : 481 640 720 00027</p>
           <p className="mt-1">Contact : <a href="mailto:contact@paynelope.fr" className="text-indigo-600 hover:underline">contact@paynelope.fr</a></p>
         </div>
 
