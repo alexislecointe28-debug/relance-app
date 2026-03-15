@@ -22,6 +22,7 @@ interface Props {
   rappels: (Action & { dossier: Dossier })[]
   feed: FeedItem[]
   stats: { total_montant: number; dossiers_actifs: number; a_relancer: number; pct_qualifies: number }
+  onboarding: { hasImported: boolean; hasIdentified: boolean; hasRelanced: boolean }
 }
 
 function getHeroText(montant: string) {
@@ -123,7 +124,7 @@ function CardStack({
   )
 }
 
-export default function DashboardClient({ dossiers: initialDossiers, rappels, feed, stats }: Props) {
+export default function DashboardClient({ dossiers: initialDossiers, rappels, feed, stats, onboarding }: Props) {
   const [dossiers, setDossiers] = useState(initialDossiers)
   const [skippedEnrich, setSkippedEnrich] = useState<Set<string>>(new Set())
   const [skippedRelance, setSkippedRelance] = useState<Set<string>>(new Set())
@@ -132,6 +133,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
   const [rappelsDismissed, setRappelsDismissed] = useState<Set<string>>(new Set())
   const [rappelsOpen, setRappelsOpen] = useState(false)
   const [rappelsShowAll, setRappelsShowAll] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
   const todayKey = 'scoreJour_' + new Date().toISOString().split('T')[0]
   const [scoreJour, setScoreJourState] = useState(() => {
     if (typeof window === 'undefined') return 0
@@ -349,6 +351,15 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
   }
 
   // Keyboard
+  // Tooltip premier pas — une seule fois
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!localStorage.getItem('paynelope_tooltip_seen') && initialDossiers.length > 0) {
+      setTimeout(() => setShowTooltip(true), 1200)
+      localStorage.setItem('paynelope_tooltip_seen', '1')
+    }
+  }, [])
+
   // Bloquer le scroll du body quand un modal est ouvert (iOS-safe)
   useEffect(() => {
     const hasModal = !!modalDossier || !!scriptModal || enrichMode
@@ -503,6 +514,52 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
             </div>
           )}
         </section>
+      )}
+
+      {/* ========= TOOLTIP PREMIER PAS ========= */}
+      {showTooltip && (
+        <div className="fixed bottom-28 sm:bottom-8 right-4 z-40 max-w-xs animate-slide-up">
+          <div className="bg-indigo-600 text-white rounded-2xl px-4 py-3 shadow-xl relative">
+            <button onClick={() => setShowTooltip(false)}
+              className="absolute top-2 right-3 text-indigo-200 hover:text-white text-lg leading-none">×</button>
+            <div className="text-sm font-bold mb-1">👋 Par où commencer ?</div>
+            <div className="text-xs text-indigo-100 mb-3">Va dans <strong>Importer</strong> pour charger tes factures impayées en quelques secondes.</div>
+            <a href="/import" onClick={() => setShowTooltip(false)}
+              className="block text-center text-xs font-bold bg-white text-indigo-600 rounded-xl py-2 hover:bg-indigo-50 transition-colors">
+              📥 Importer mes factures →
+            </a>
+            {/* Flèche pointant vers le bas */}
+            <div className="absolute -bottom-2 right-8 w-4 h-4 bg-indigo-600 rotate-45" />
+          </div>
+        </div>
+      )}
+
+      {/* ========= ÉTAT VIDE INTELLIGENT ========= */}
+      {!onboarding.hasImported && (
+        <div className="bg-white border-2 border-dashed border-indigo-200 rounded-2xl p-8 text-center mb-6 animate-fade-in">
+          <div className="text-5xl mb-4">📂</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Par où commencer ?</h2>
+          <p className="text-sm text-gray-400 mb-6">Importe tes factures impayées pour commencer à relancer</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="/import"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm">
+              📥 Importer mes factures
+            </a>
+            <a href="/dossiers"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold text-sm transition-colors">
+              ✏️ Ajouter manuellement
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* ========= CHECKLIST DE DÉMARRAGE ========= */}
+      {onboarding.hasImported && (!onboarding.hasIdentified || !onboarding.hasRelanced) && (
+        <ChecklistOnboarding
+          hasImported={onboarding.hasImported}
+          hasIdentified={onboarding.hasIdentified}
+          hasRelanced={onboarding.hasRelanced}
+        />
       )}
 
       {/* === 2 PILES CÔTE À CÔTE DESKTOP === */}
@@ -1217,5 +1274,82 @@ function FeedRow({ item }: { item: FeedItem }) {
       </div>
       <span className="text-xs text-gray-300 shrink-0">{timeAgo(item.created_at)}</span>
     </Link>
+  )
+}
+
+// ---- Checklist onboarding ----
+function ChecklistOnboarding({ hasImported, hasIdentified, hasRelanced }: {
+  hasImported: boolean
+  hasIdentified: boolean
+  hasRelanced: boolean
+}) {
+  const steps = [
+    {
+      done: hasImported,
+      label: 'Importer tes factures impayées',
+      sub: 'Excel, CSV ou PDF',
+      href: '/import',
+      cta: 'Importer',
+      icon: '📥',
+    },
+    {
+      done: hasIdentified,
+      label: 'Identifier un contact chez un client',
+      sub: 'Qui appeler pour récupérer l\'argent ?',
+      href: '/dashboard',
+      cta: 'Identifier',
+      icon: '🔍',
+    },
+    {
+      done: hasRelanced,
+      label: 'Faire ta première relance',
+      sub: 'Appel ou email — moins de 2 minutes',
+      href: '/dashboard',
+      cta: 'Relancer',
+      icon: '⚡',
+    },
+  ]
+
+  const doneCount = steps.filter(s => s.done).length
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm animate-fade-in">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <div className="text-sm font-bold text-gray-900">Premiers pas</div>
+          <div className="text-xs text-gray-400">{doneCount}/3 étapes complétées</div>
+        </div>
+        {/* Barre de progression */}
+        <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+            style={{ width: `${(doneCount / 3) * 100}%` }}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        {steps.map((step, i) => (
+          <div key={i} className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${step.done ? 'opacity-50' : 'bg-gray-50'}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+              step.done ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600'
+            }`}>
+              {step.done ? '✓' : i + 1}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className={`text-sm font-semibold ${step.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                {step.icon} {step.label}
+              </div>
+              {!step.done && <div className="text-xs text-gray-400">{step.sub}</div>}
+            </div>
+            {!step.done && (
+              <a href={step.href}
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 shrink-0 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                {step.cta} →
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

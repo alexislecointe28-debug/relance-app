@@ -60,6 +60,15 @@ export default async function DashboardPage() {
   const avec_contact = dossiersWithCount.filter(d => d.contact).length
   const pct_qualifies = dossiersWithCount.length > 0 ? Math.round((avec_contact / dossiersWithCount.length) * 100) : 0
 
+  // Stats pour la checklist onboarding
+  const { count: actionsCount } = await supabase
+    .from('actions')
+    .select('id', { count: 'exact', head: true })
+
+  const hasImported = dossiersWithCount.length > 0
+  const hasIdentified = avec_contact > 0
+  const hasRelanced = (actionsCount || 0) > 0
+
   return (
     <div className="min-h-screen bg-canvas">
       <Header />
@@ -69,6 +78,7 @@ export default async function DashboardPage() {
         rappels={(rappels || []) as any}
         feed={(feed || []) as any}
         stats={{ total_montant, dossiers_actifs, a_relancer, pct_qualifies }}
+        onboarding={{ hasImported, hasIdentified, hasRelanced }}
       />
     </div>
   )
