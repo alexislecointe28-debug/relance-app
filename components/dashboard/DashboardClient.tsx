@@ -349,11 +349,26 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
   }
 
   // Keyboard
-  // Bloquer le scroll du body quand un modal est ouvert
+  // Bloquer le scroll du body quand un modal est ouvert (iOS-safe)
   useEffect(() => {
     const hasModal = !!modalDossier || !!scriptModal || enrichMode
-    document.body.style.overflow = hasModal ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (hasModal) {
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+    } else {
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      if (scrollY) window.scrollTo(0, -parseInt(scrollY))
+    }
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+    }
   }, [modalDossier, scriptModal, enrichMode])
 
   // Attacher les événements touch en mode non-passif pour permettre preventDefault
