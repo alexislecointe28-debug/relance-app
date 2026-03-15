@@ -74,6 +74,10 @@ export default function ImportClient() {
   function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      setError("Ce fichier est un PDF — utilise l'onglet 📄 PDF pour l'importer.")
+      return
+    }
     setLoading(true)
     setError('')
     const reader = new FileReader()
