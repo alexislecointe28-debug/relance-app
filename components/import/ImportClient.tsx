@@ -3,9 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
-import { detectSeparator, detectColumns, parseAmount, formatMontant } from '@/lib/utils'
-
-type Mode = 'excel' | 'pdf' | 'manual'
+import { detectColumns, parseAmount, formatMontant } from '@/lib/utils'
 
 interface ParsedFacture {
   societe: string
@@ -17,23 +15,60 @@ interface ParsedFacture {
   _selected?: boolean
 }
 
+const FIELDS = [
+  { key: 'societe',       label: 'Société / Client',  required: true },
+  { key: 'numero',        label: 'N° Pièce / Facture', required: true },
+  { key: 'montant_ttc',   label: 'Montant TTC',        required: true },
+  { key: 'date_facture',  label: 'Date facture',        required: false },
+  { key: 'date_echeance', label: 'Date d\'échéance',   required: false },
+] as const
+
+type FieldKey = typeof FIELDS[number]['key']
+
 export default function ImportClient() {
-  const [mode, setMode] = useState<Mode>('excel')
-  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'success'>('upload')
+  const [step, setStep] = useState<'upload' | 'mapping' | 'preview' | 'success'>('upload')
+  const [headers, setHeaders] = useState<string[]>([])
+  const [rawData, setRawData] = useState<string[][]>([])
+  const [mapping, setMapping] = useState<Record<string, number>>({})
   const [parsed, setParsed] = useState<ParsedFacture[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [rawData, setRawData] = useState<string[][]>([])
-  const [headers, setHeaders] = useState<string[]>([])
-  const [mapping, setMapping] = useState<Record<string, number>>({})
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null)
+  const [mode, setMode] = useState<'excel' | 'manual'>('excel')
   const [manual, setManual] = useState<ParsedFacture>({
     societe: '', numero: '', montant_ttc: 0,
     date_facture: '', date_echeance: '', bon_commande: ''
   })
   const router = useRouter()
 
-  // Parse Excel
+  function processFile(rows: string[][], h: string[]) {
+    setHeaders(h)
+    setRawData(rows)
+    const detected = detectColumns(h)
+    setMapping(detected)
+    // Si les 3 champs obligatoires sont détectés → aller direct en preview
+    const hasRequired = detected.societe !== undefined && detected.numero !== undefined && detected.montant_ttc !== undefined
+    if (hasRequired) {
+      applyMappingDirect(rows, detected)
+    } else {
+      setStep('mapping')
+    }
+  }
+
+  function applyMappingDirect(rows: string[][], m: Record<string, number>) {
+    const result = rows.map(row => ({
+      societe: m.societe !== undefined ? row[m.societe] || '' : '',
+      numero: m.numero !== undefined ? row[m.numero] || '' : '',
+      montant_ttc: m.montant_ttc !== undefined ? parseAmount(row[m.montant_ttc] || '0') : 0,
+      date_facture: m.date_facture !== undefined ? row[m.date_facture] || '' : '',
+      date_echeance: m.date_echeance !== undefined ? row[m.date_echeance] || '' : '',
+      bon_commande: m.bon_commande !== undefined ? row[m.bon_commande] || '' : '',
+      _selected: true,
+    })).filter(r => r.societe || r.numero)
+    setParsed(result)
+    setStep('preview')
+  }
+
   function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -43,55 +78,18 @@ export default function ImportClient() {
     reader.onload = (ev) => {
       try {
         const data = new Uint8Array(ev.target?.result as ArrayBuffer)
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true })
-        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const wb = XLSX.read(data, { type: 'array', cellDates: true })
+        const sheet = wb.Sheets[wb.SheetNames[0]]
         const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, raw: false, dateNF: 'dd/mm/yyyy' })
         const h = (rows[0] as string[]) || []
         const dataRows = rows.slice(1).filter((r: any) => r.some((c: any) => c)) as string[][]
-        setHeaders(h)
-        setRawData(dataRows)
-        setMapping(detectColumns(h))
-        setStep('map')
-      } catch (err) {
-        setError("Impossible de lire ce fichier Excel. Vérifiez qu'il est au format .xlsx")
+        processFile(dataRows, h)
+      } catch {
+        setError("Impossible de lire ce fichier. Vérifiez qu'il est au format .xlsx")
       }
       setLoading(false)
     }
     reader.readAsArrayBuffer(file)
-  }
-
-  // Parse CSV
-  function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setLoading(true)
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const text = ev.target?.result as string
-      const sep = detectSeparator(text)
-      const rows = text.split('\n').map(r => r.split(sep).map(c => c.trim().replace(/^"|"$/g, '')))
-      const h = rows[0] || []
-      setHeaders(h)
-      setRawData(rows.slice(1).filter(r => r.some(c => c)))
-      setMapping(detectColumns(h))
-      setStep('map')
-      setLoading(false)
-    }
-    reader.readAsText(file, 'UTF-8')
-  }
-
-  function applyMapping() {
-    const rows: ParsedFacture[] = rawData.map(row => ({
-      societe: mapping.societe !== undefined ? row[mapping.societe] || '' : '',
-      numero: mapping.numero !== undefined ? row[mapping.numero] || '' : '',
-      montant_ttc: mapping.montant_ttc !== undefined ? parseAmount(row[mapping.montant_ttc] || '0') : 0,
-      date_facture: mapping.date_facture !== undefined ? row[mapping.date_facture] || '' : '',
-      date_echeance: mapping.date_echeance !== undefined ? row[mapping.date_echeance] || '' : '',
-      bon_commande: mapping.bon_commande !== undefined ? row[mapping.bon_commande] || '' : '',
-      _selected: true,
-    }))
-    setParsed(rows)
-    setStep('preview')
   }
 
   async function handleImport() {
@@ -123,246 +121,226 @@ export default function ImportClient() {
     setLoading(false)
   }
 
-  const FIELDS = [
-    { key: 'societe', label: 'Société' },
-    { key: 'numero', label: 'N° Facture' },
-    { key: 'montant_ttc', label: 'Montant TTC' },
-    { key: 'date_facture', label: 'Date facture' },
-    { key: 'date_echeance', label: 'Échéance' },
-    { key: 'bon_commande', label: 'Bon de commande' },
-  ] as const
+  // ---- RENDER ----
+  if (step === 'success') {
+    return (
+      <main className="max-w-2xl mx-auto px-4 py-12 text-center">
+        <div className="text-6xl mb-4">✅</div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Import réussi !</h2>
+        {importResult && (
+          <div className="space-y-1 mb-8 text-sm text-gray-500">
+            <p>{importResult.imported} facture(s) importée(s)</p>
+            {importResult.skipped > 0 && <p className="text-amber-600">{importResult.skipped} doublon(s) ignoré(s)</p>}
+          </div>
+        )}
+        <button onClick={() => router.push('/dashboard')}
+          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold">
+          Voir le dashboard →
+        </button>
+      </main>
+    )
+  }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Importer des factures</h1>
-        <p className="text-gray-500 text-sm">Excel recommandé — CSV et saisie manuelle aussi disponibles.</p>
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Importer des factures</h1>
+        <p className="text-sm text-gray-400 mt-1">Excel recommandé — la détection des colonnes est automatique.</p>
       </div>
 
-      {step === 'success' ? (
-        <div className="bg-white border border-emerald-200 rounded-2xl p-12 text-center shadow-sm">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Import réussi !</h2>
-          {importResult && (
-            <div className="space-y-1 mb-6">
-              <p className="text-gray-600">{importResult.imported} facture(s) importée(s)</p>
-              {importResult.skipped > 0 && (
-                <p className="text-amber-600 text-sm">{importResult.skipped} doublon(s) ignoré(s)</p>
-              )}
-            </div>
-          )}
-          <button onClick={() => router.push('/dashboard')}
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
-            Voir le tableau de bord
-          </button>
-        </div>
-      ) : (
-        <>
-          {step === 'upload' && (
-            <div className="flex gap-2 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
-              {([
-                { id: 'excel', label: '📊 Excel', desc: 'Recommandé' },
-                { id: 'pdf', label: '📄 PDF', desc: '' },
-                { id: 'manual', label: '✏️ Manuel', desc: '' },
-              ] as { id: Mode; label: string; desc: string }[]).map(m => (
-                <button key={m.id} onClick={() => setMode(m.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${mode === m.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>
-                  {m.label}
-                  {m.desc && <span className="ml-1 text-xs text-emerald-600 font-semibold">{m.desc}</span>}
-                </button>
-              ))}
-            </div>
+      {error && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{error}</p>}
+
+      {/* STEP 1 — UPLOAD */}
+      {step === 'upload' && (
+        <div className="space-y-4">
+          <div className="flex gap-2 bg-gray-100 rounded-xl p-1 w-fit">
+            <button onClick={() => setMode('excel')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'excel' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+              📊 Excel <span className="ml-1 text-xs text-emerald-600 font-semibold">Recommandé</span>
+            </button>
+            <button onClick={() => setMode('manual')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'manual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>
+              ✏️ Saisie manuelle
+            </button>
+          </div>
+
+          {mode === 'excel' && (
+            <UploadZone loading={loading} onChange={handleExcelUpload} />
           )}
 
-          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-
-          {step === 'upload' && mode === 'pdf' && (
-            <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center">
-              <div className="text-4xl mb-3">📄</div>
-              <div className="font-semibold text-gray-900 mb-2">Import PDF</div>
-              <div className="text-sm text-gray-400 mb-4">Glissez votre facture PDF ici</div>
-              <div className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 inline-block">
-                🚧 Fonctionnalité en cours de développement — disponible prochainement
-              </div>
-            </div>
-          )}
-
-          {step === 'upload' && mode === 'excel' && (
-            <UploadZone
-              loading={loading}
-              accept=".xlsx,.xls"
-              hint="Glissez votre fichier Excel ici · .xlsx ou .xls"
-              icon="📊"
-              onChange={handleExcelUpload}
-            />
-          )}
-
-          {step === 'upload' && mode === 'pdf' && (
-            <UploadZone
-              loading={loading}
-              accept=".csv,.tsv,.txt"
-              hint="Glissez votre fichier CSV ici · séparateur auto-détecté"
-              icon="📄"
-              onChange={handleCsvUpload}
-            />
-          )}
-
-          {step === 'upload' && mode === 'manual' && (
+          {mode === 'manual' && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h2 className="font-semibold text-gray-900 mb-4">Saisie manuelle</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {FIELDS.map(f => (
                   <div key={f.key}>
-                    <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">{f.label}</label>
+                    <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">
+                      {f.label} {f.required && <span className="text-red-400">*</span>}
+                    </label>
                     <input
                       type={f.key.includes('date') ? 'date' : f.key === 'montant_ttc' ? 'number' : 'text'}
                       value={manual[f.key] as string}
                       onChange={e => setManual(prev => ({
                         ...prev,
-                        [f.key]: f.key === 'montant_ttc' ? parseFloat(e.target.value) : e.target.value
+                        [f.key]: f.key === 'montant_ttc' ? parseFloat(e.target.value) || 0 : e.target.value
                       }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     />
                   </div>
                 ))}
               </div>
               <button
-                onClick={() => { setParsed([{ ...manual, _selected: true }]); setStep('preview') }}
-                className="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
-                Continuer
+                disabled={!manual.societe || !manual.numero}
+                onClick={() => { setParsed([{ ...manual, bon_commande: '', _selected: true }]); setStep('preview') }}
+                className="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+                Prévisualiser →
               </button>
             </div>
           )}
 
-          {step === 'map' && (
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5 shadow-sm">
-              <h2 className="font-semibold text-gray-900">Correspondance des colonnes</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {FIELDS.map(f => (
-                  <div key={f.key}>
-                    <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-medium">{f.label}</label>
-                    <select
-                      value={mapping[f.key] !== undefined ? mapping[f.key] : ''}
-                      onChange={e => setMapping(prev => ({
-                        ...prev,
-                        [f.key]: e.target.value !== '' ? parseInt(e.target.value) : undefined as any
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    >
-                      <option value="">— Ignorer —</option>
-                      {headers.map((h, i) => <option key={i} value={i}>{h}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </div>
-              <div className="border border-gray-200 rounded-xl overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      {headers.map((h, i) => (
-                        <th key={i} className="px-3 py-2 text-left text-gray-500 font-medium">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rawData.slice(0, 3).map((row, i) => (
-                      <tr key={i} className="border-b border-gray-50">
-                        {row.map((cell, j) => (
-                          <td key={j} className="px-3 py-2 text-gray-700">{cell}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setStep('upload')}
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
-                  ← Retour
-                </button>
-                <button onClick={applyMapping}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium">
-                  Prévisualiser ({rawData.length} lignes)
-                </button>
-              </div>
+          {/* Champs attendus */}
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+            <p className="text-xs text-indigo-600 font-semibold mb-2">Colonnes reconnues automatiquement :</p>
+            <div className="flex flex-wrap gap-2">
+              {FIELDS.map(f => (
+                <span key={f.key} className="text-xs bg-white border border-indigo-200 text-indigo-700 rounded-lg px-2 py-1">
+                  {f.label}
+                </span>
+              ))}
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {step === 'preview' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">
-                  {parsed.filter(f => f._selected).length} facture(s) à importer
-                </h2>
-                <div className="flex gap-3">
-                  <button onClick={() => setStep(mode === 'manual' ? 'upload' : 'map')}
-                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50">
-                    ← Retour
-                  </button>
-                  <button onClick={handleImport}
-                    disabled={loading || !parsed.some(f => f._selected)}
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium disabled:opacity-50">
-                    {loading ? 'Import en cours…' : 'Importer'}
-                  </button>
-                </div>
+      {/* STEP 2 — MAPPING (seulement si nécessaire) */}
+      {step === 'mapping' && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
+          <div>
+            <h2 className="font-bold text-gray-900">Correspondance des colonnes</h2>
+            <p className="text-xs text-gray-400 mt-1">Certaines colonnes n'ont pas été reconnues. Assigne-les manuellement.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {FIELDS.map(f => (
+              <div key={f.key}>
+                <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">
+                  {f.label} {f.required && <span className="text-red-400">*</span>}
+                  {mapping[f.key] !== undefined && <span className="ml-1 text-emerald-500">✓</span>}
+                </label>
+                <select
+                  value={mapping[f.key] !== undefined ? mapping[f.key] : ''}
+                  onChange={e => setMapping(prev => ({
+                    ...prev,
+                    [f.key]: e.target.value !== '' ? parseInt(e.target.value) : undefined as any
+                  }))}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  <option value="">— Non mappé —</option>
+                  {headers.map((h, i) => <option key={i} value={i}>{h}</option>)}
+                </select>
               </div>
-              {error && <p className="text-red-600 text-sm">{error}</p>}
-              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="px-4 py-3 text-left w-8">
-                        <input type="checkbox"
-                          checked={parsed.every(f => f._selected)}
-                          onChange={e => setParsed(prev => prev.map(f => ({ ...f, _selected: e.target.checked })))}
-                          className="accent-blue-600" />
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Société</th>
-                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">N° Facture</th>
-                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Montant TTC</th>
-                      <th className="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Échéance</th>
-                      <th className="px-4 py-3 w-8" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {parsed.map((row, i) => (
-                      <tr key={i} className={!row._selected ? 'opacity-40' : ''}>
-                        <td className="px-4 py-3">
-                          <input type="checkbox" checked={row._selected}
-                            onChange={e => setParsed(prev => prev.map((r, j) => j === i ? { ...r, _selected: e.target.checked } : r))}
-                            className="accent-blue-600" />
-                        </td>
-                        <td className="px-4 py-3 font-medium text-gray-900">
-                          {row.societe || <span className="text-red-500">⚠ manquant</span>}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">{row.numero}</td>
-                        <td className="px-4 py-3 font-mono text-gray-900">{formatMontant(row.montant_ttc)}</td>
-                        <td className="px-4 py-3 text-gray-500">{row.date_echeance}</td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => setParsed(prev => prev.filter((_, j) => j !== i))}
-                            className="text-xs text-red-400 hover:text-red-600">✕</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            ))}
+          </div>
+          {/* Aperçu 3 lignes */}
+          <div className="overflow-x-auto border border-gray-100 rounded-xl">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  {headers.map((h, i) => <th key={i} className="px-3 py-2 text-left text-gray-400 font-medium">{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {rawData.slice(0, 3).map((row, i) => (
+                  <tr key={i} className="border-b border-gray-50">
+                    {row.map((cell, j) => <td key={j} className="px-3 py-2 text-gray-600">{cell}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setStep('upload')}
+              className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
+              ← Retour
+            </button>
+            <button
+              disabled={!mapping.societe || !mapping.numero || !mapping.montant_ttc}
+              onClick={() => applyMappingDirect(rawData, mapping)}
+              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+              Prévisualiser ({rawData.length} lignes) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3 — PREVIEW */}
+      {step === 'preview' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-gray-900">{parsed.filter(f => f._selected).length} facture(s) à importer</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Décoche celles à ignorer</p>
             </div>
-          )}
-        </>
+            <div className="flex gap-2">
+              <button onClick={() => setStep(mode === 'manual' ? 'upload' : headers.length ? 'mapping' : 'upload')}
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">
+                ← Retour
+              </button>
+              <button onClick={handleImport}
+                disabled={loading || !parsed.some(f => f._selected)}
+                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:opacity-50">
+                {loading ? 'Import…' : `Importer ${parsed.filter(f => f._selected).length} facture(s)`}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="px-4 py-3 w-8">
+                    <input type="checkbox"
+                      checked={parsed.every(f => f._selected)}
+                      onChange={e => setParsed(prev => prev.map(f => ({ ...f, _selected: e.target.checked })))}
+                      className="accent-indigo-600" />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium">Société</th>
+                  <th className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium">N° Pièce</th>
+                  <th className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium">Montant TTC</th>
+                  <th className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium">Échéance</th>
+                  <th className="px-4 py-3 w-8" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {parsed.map((row, i) => (
+                  <tr key={i} className={!row._selected ? 'opacity-40' : ''}>
+                    <td className="px-4 py-3">
+                      <input type="checkbox" checked={!!row._selected}
+                        onChange={e => setParsed(prev => prev.map((r, j) => j === i ? { ...r, _selected: e.target.checked } : r))}
+                        className="accent-indigo-600" />
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {row.societe || <span className="text-red-400 text-xs">⚠ manquant</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{row.numero}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{formatMontant(row.montant_ttc)}</td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">{row.date_echeance || '—'}</td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => setParsed(prev => prev.filter((_, j) => j !== i))}
+                        className="text-gray-300 hover:text-red-400 text-sm">✕</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </main>
   )
 }
 
-function UploadZone({
-  onChange, loading, accept, hint, icon
-}: {
+function UploadZone({ onChange, loading }: {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   loading?: boolean
-  accept: string
-  hint: string
-  icon: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
@@ -384,16 +362,21 @@ function UploadZone({
         }
       }}
       className={`border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-all ${
-        dragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+        dragOver ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/40'
       }`}
     >
-      <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={onChange} />
-      <div className="text-4xl mb-4">{loading ? '⏳' : icon}</div>
-      <div className="font-medium text-gray-700">{loading ? 'Lecture du fichier…' : hint}</div>
+      <input ref={inputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={onChange} />
+      <div className="text-5xl mb-4">{loading ? '⏳' : '📊'}</div>
+      <div className="font-semibold text-gray-700 mb-1">
+        {loading ? 'Lecture du fichier…' : 'Glisse ton fichier Excel ici'}
+      </div>
       {!loading && (
-        <div className="mt-3 inline-block px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg">
-          Choisir un fichier
-        </div>
+        <>
+          <div className="text-sm text-gray-400 mb-4">.xlsx ou .xls · les colonnes sont détectées automatiquement</div>
+          <div className="inline-block px-5 py-2 bg-indigo-600 text-white text-sm rounded-xl font-semibold">
+            Choisir un fichier
+          </div>
+        </>
       )}
     </div>
   )
