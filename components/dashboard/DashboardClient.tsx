@@ -506,6 +506,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
               style={{
                 transform: exitingE
                   ? `translateX(${swipeDirE === 'right' ? '110%' : '-110%'}) rotate(${swipeDirE === 'right' ? '8deg' : '-8deg'})`
+                  : enrichMode ? 'none'
                   : `translateX(${swipeXE}px) rotate(${swipeXE * 0.04}deg)`,
                 transition: exitingE || (!swipingE && swipeXE !== 0) ? 'transform 0.3s ease' : 'none',
                 touchAction: enrichMode ? 'pan-y' : 'none',
