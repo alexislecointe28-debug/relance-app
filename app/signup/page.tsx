@@ -69,10 +69,10 @@ export default function SignupPage() {
           Déjà un compte ?{' '}
           <Link href="/login" className="text-indigo-600 hover:underline">Se connecter</Link>
         </p>
-      </div>
-      <p className="text-center text-xs text-gray-300 pt-6">
+      <p className="text-center text-xs text-gray-300 mt-6">
         <a href="/legal" className="hover:text-gray-500 transition-colors">CGU &amp; Mentions légales</a>
       </p>
+      </div>
     </div>
   )
 }
