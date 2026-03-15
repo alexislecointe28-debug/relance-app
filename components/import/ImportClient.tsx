@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
 import { detectColumns, parseAmount, formatMontant } from '@/lib/utils'
 
+type Mode = 'excel' | 'pdf' | 'manual'
+
 interface ParsedFacture {
   societe: string
   numero: string
