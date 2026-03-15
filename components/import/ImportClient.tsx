@@ -455,82 +455,69 @@ function PdfUploadZone({ loading, onParsed, onError }: {
   }
 
   function extractFacturesFromText(text: string): ParsedFacture[] {
-    const factures: ParsedFacture[] = []
-    const lines = text.split(/\n|\r/).map(l => l.trim()).filter(Boolean)
+    const result: Partial<ParsedFacture> = {}
 
-    // Patterns pour détecter les données
-    const piecePat = /(?:FA[CT]|FAC|INV|FACT)[- ]?[\d]{4,}/i
-    const montantPat = /(\d{1,3}(?:[ .\u00a0]\d{3})*(?:[,\.]\d{2})?)\s*€?/
-    const datePat = /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/
-    const societePat = /(?:client|société|destinataire|facturé à)[:\s]+([A-Z][^\n]+)/i
+    // N° de pièce
+    const pieceMatch = text.match(/N[°º]\s*:?\s*((?:FAC|FACT|INV|DEV|BL|BC)[^\s,]{1,20})/i)
+      || text.match(/((?:FAC|FACT|INV|DEV|BL)\s*[\d]{4,})/i)
+    if (pieceMatch) result.numero = pieceMatch[1].replace(/\s/g, '')
 
-    let currentFacture: Partial<ParsedFacture> = {}
-    let inFacture = false
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-
-      // Détecter numéro de pièce → début d'une facture
-      const pieceMatch = line.match(piecePat)
-      if (pieceMatch) {
-        if (currentFacture.numero && currentFacture.montant_ttc) {
-          factures.push({
-            societe: currentFacture.societe || 'Inconnu',
-            numero: currentFacture.numero,
-            montant_ttc: currentFacture.montant_ttc,
-            date_facture: currentFacture.date_facture || '',
-            date_echeance: currentFacture.date_echeance || '',
-            bon_commande: '',
-            _selected: true,
-          })
-        }
-        currentFacture = { numero: pieceMatch[0] }
-        inFacture = true
-      }
-
-      if (!inFacture) continue
-
-      // Société
-      const societeMatch = line.match(societePat)
-      if (societeMatch && !currentFacture.societe) {
-        currentFacture.societe = societeMatch[1].trim()
-      }
-
-      // Dates
-      const dates = Array.from(line.matchAll(new RegExp(datePat.source, 'g')))
-      if (dates.length > 0) {
-        const d = dates[0]
-        const formatted = `${d[1].padStart(2,'0')}/${d[2].padStart(2,'0')}/${d[3].length === 2 ? '20' + d[3] : d[3]}`
-        if (!currentFacture.date_facture) currentFacture.date_facture = formatted
-        else if (!currentFacture.date_echeance && dates[1]) {
-          const d2 = dates[1]
-          currentFacture.date_echeance = `${d2[1].padStart(2,'0')}/${d2[2].padStart(2,'0')}/${d2[3].length === 2 ? '20' + d2[3] : d2[3]}`
-        }
-      }
-
-      // Montant TTC (chercher "total" ou "ttc" sur la ligne)
-      if (/total|ttc|net à payer|montant/i.test(line) && !currentFacture.montant_ttc) {
-        const montMatch = line.match(montantPat)
-        if (montMatch) {
-          currentFacture.montant_ttc = parseAmount(montMatch[1])
+    // Société client
+    const societePatterns = [
+      /(?:client|destinataire|facturé à|adressé à)[\s:]+([^\n\r,]{3,60})/i,
+    ]
+    for (const pat of societePatterns) {
+      const m = text.match(pat)
+      if (m && m[1].trim().length > 2) { result.societe = m[1].trim(); break }
+    }
+    // Fallback : première ligne tout en majuscules non triviale
+    if (!result.societe) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3)
+      for (const line of lines) {
+        if (/^[A-Z][A-Z\s&'\-\.]{3,}$/.test(line) && !/FACTURE|INVOICE|TOTAL|TVA|SIRET|IBAN|ATOUT|FILM/i.test(line)) {
+          result.societe = line
+          break
         }
       }
     }
 
-    // Ajouter la dernière facture
-    if (currentFacture.numero && currentFacture.montant_ttc) {
-      factures.push({
-        societe: currentFacture.societe || 'Inconnu',
-        numero: currentFacture.numero,
-        montant_ttc: currentFacture.montant_ttc,
-        date_facture: currentFacture.date_facture || '',
-        date_echeance: currentFacture.date_echeance || '',
-        bon_commande: '',
-        _selected: true,
-      })
+    // Date facture
+    const dateFacMatch = text.match(/Date\s*:\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i)
+      || text.match(/(?:émis|le)\s*:?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i)
+    if (dateFacMatch) result.date_facture = dateFacMatch[1]
+
+    // Date échéance
+    const echeanceMatch = text.match(/Echéance[^\d]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i)
+      || text.match(/au\s+(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i)
+      || text.match(/(?:échéance|echeance)\s*:?\s*[\d\s,\.€]*?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i)
+    if (echeanceMatch) result.date_echeance = echeanceMatch[1]
+
+    // Montant TTC
+    const ttcPatterns = [
+      /Total\s+TTC\s+([\d\s,\.]+)\s*€/i,
+      /TTC\s+([\d\s,\.]+)\s*€/i,
+      /Total TTC[^\d]*([\d][\d\s,\.]+)/i,
+      /Net\s+à\s+payer[^\d]*([\d][\d\s,\.]+)/i,
+    ]
+    for (const pat of ttcPatterns) {
+      const m = text.match(pat)
+      if (m) {
+        const val = parseAmount(m[1].trim())
+        if (val > 0) { result.montant_ttc = val; break }
+      }
     }
 
-    return factures
+    if (!result.numero && !result.montant_ttc) return []
+
+    return [{
+      societe: result.societe || 'Inconnu',
+      numero: result.numero || '',
+      montant_ttc: result.montant_ttc || 0,
+      date_facture: result.date_facture || '',
+      date_echeance: result.date_echeance || '',
+      bon_commande: '',
+      _selected: true,
+    }]
   }
 
   async function handleFile(file: File) {
