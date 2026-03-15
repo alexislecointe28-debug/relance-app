@@ -349,6 +349,13 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
   }
 
   // Keyboard
+  // Bloquer le scroll du body quand un modal est ouvert
+  useEffect(() => {
+    const hasModal = !!modalDossier || !!scriptModal || enrichMode
+    document.body.style.overflow = hasModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [modalDossier, scriptModal, enrichMode])
+
   // Attacher les événements touch en mode non-passif pour permettre preventDefault
   useEffect(() => {
     const cardE = cardRefE.current
