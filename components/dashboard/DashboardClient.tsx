@@ -199,7 +199,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, st
 
   async function incrementStreak() {
     const today = new Date().toISOString().split('T')[0]
-    const { data: membre } = await supabase.from('membres').select('streak, streak_last_date').single()
+    const { data: membre } = await supabase.from('membres').select('streak, streak_last_date, score_total').single()
     if (!membre) return
     const lastDate = membre.streak_last_date
     const diff = lastDate ? Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86400000) : 999
