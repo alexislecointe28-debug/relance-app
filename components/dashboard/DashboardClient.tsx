@@ -15,6 +15,7 @@ interface FeedItem {
   created_at: string
   niveau_email?: string
   dossier?: { id: string, societe: string }
+  membre?: { prenom?: string, nom?: string } | null
 }
 
 interface Props {
@@ -1272,7 +1273,14 @@ function FeedRow({ item }: { item: FeedItem }) {
           <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
         )}
       </div>
-      <span className="text-xs text-gray-300 shrink-0">{timeAgo(item.created_at)}</span>
+      <div className="flex items-center gap-1.5 shrink-0">
+        {item.membre?.prenom && (
+          <span className="text-xs font-medium text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-md">
+            {item.membre.prenom}
+          </span>
+        )}
+        <span className="text-xs text-gray-300">{timeAgo(item.created_at)}</span>
+      </div>
     </Link>
   )
 }

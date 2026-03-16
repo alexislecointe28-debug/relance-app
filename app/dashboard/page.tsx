@@ -33,7 +33,7 @@ export default async function DashboardPage() {
 
   const { data: feed } = await supabase
     .from('actions')
-    .select('id, type, notes, created_at, niveau_email, dossier:dossiers(id, societe)')
+    .select('id, type, notes, created_at, niveau_email, dossier:dossiers(id, societe), membre:membres(prenom, nom)')
     .order('created_at', { ascending: false })
     .limit(10)
 
