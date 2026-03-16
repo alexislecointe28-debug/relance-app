@@ -1042,7 +1042,7 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
                     </a>
                   )}
                   {!dossier.contact.telephone && (
-                    <div className="text-xs text-amber-500">Pas de téléphone enregistré</div>
+                    <EditPhoneInline contactId={dossier.contact.id} />
                   )}
                 </div>
               </div>
@@ -1381,5 +1381,56 @@ function ChecklistOnboarding({ hasImported, hasIdentified, hasRelanced }: {
         ))}
       </div>
     </div>
+  )
+}
+
+// ---- Édition téléphone inline ----
+function EditPhoneInline({ contactId }: { contactId: string }) {
+  const supabase = createClient()
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  async function handleSave() {
+    if (!value.trim()) return
+    setLoading(true)
+    await supabase.from('contacts').update({ telephone: value.trim() }).eq('id', contactId)
+    setLoading(false)
+    setSaved(true)
+  }
+
+  if (saved) return (
+    <a href={`tel:${value}`} className="text-sm text-indigo-600 font-mono hover:underline">
+      📞 {value}
+    </a>
+  )
+
+  if (editing) return (
+    <div className="flex items-center gap-1.5 mt-1" onClick={e => e.stopPropagation()}>
+      <input
+        type="tel"
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        placeholder="06 00 00 00 00"
+        autoFocus
+        className="flex-1 text-xs border border-indigo-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-400 min-w-0"
+        onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false) }}
+      />
+      <button onClick={handleSave} disabled={loading || !value.trim()}
+        className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-lg disabled:opacity-50 shrink-0">
+        {loading ? '...' : '✓'}
+      </button>
+      <button onClick={() => setEditing(false)} className="text-xs text-gray-400 hover:text-gray-600 shrink-0">✕</button>
+    </div>
+  )
+
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); setEditing(true) }}
+      className="text-xs text-amber-500 hover:text-indigo-600 hover:underline transition-colors text-left"
+    >
+      + Ajouter un téléphone
+    </button>
   )
 }
