@@ -185,6 +185,23 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
 
   const router = useRouter()
   const supabase = createClient()
+  const [liveFeed, setLiveFeed] = useState<FeedItem[]>(feed)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('feed-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'actions' }, async () => {
+        // Recharge les 10 dernières actions avec les jointures nécessaires
+        const { data } = await supabase
+          .from('actions')
+          .select('id, type, notes, created_at, niveau_email, dossier:dossiers(id, societe), membre:membres(prenom, nom)')
+          .order('created_at', { ascending: false })
+          .limit(10)
+        if (data) setLiveFeed(data as unknown as FeedItem[])
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   useEffect(() => {
     async function loadStreak() {
@@ -840,14 +857,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
       </div>
 
       {/* === MINI FEED === */}
-      {feed.length > 0 && (
+      {liveFeed.length > 0 && (
         <div className="mt-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
             <div className="flex-1 h-px bg-gray-100" />
           </div>
           <div className="space-y-1">
-            {feed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
+            {liveFeed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
           </div>
         </div>
       )}
