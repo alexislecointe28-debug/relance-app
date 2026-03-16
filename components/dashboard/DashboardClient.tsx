@@ -442,127 +442,15 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
   const colorsR = currentRelance ? urgenceColor(currentRelance.jours_retard) : null
 
   return (
-    <main className="max-w-2xl mx-auto px-3 sm:px-6 py-6 space-y-6">
+    <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-      {/* Hero */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm card-hover">
-        <div className="text-sm text-gray-400 mb-1">Ton argent qui dort</div>
-        <div className="text-4xl font-bold text-gray-900 mb-3">{montantFormate}</div>
-        <div className="text-sm text-gray-600 mb-4 leading-snug">{getHeroText(montantFormate)}</div>
-        {(stats.montant_recupere || 0) > 0 && (
-          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mb-3">
-            <span className="text-emerald-500 text-sm">✅</span>
-            <span className="text-xs font-semibold text-emerald-700">
-              {formatMontant(stats.montant_recupere || 0)} récupérés ce mois
-            </span>
-          </div>
-        )}
-        <div className="flex flex-wrap gap-2">
-          {scoreJour > 0 && (
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
-              <span>💪</span>{scoreJour === 1 ? "1 relance aujourd'hui. C'est un début." : `${scoreJour} relances. T'es en feu.`}
-            </div>
-          )}
-          {streak > 0 && (
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
-              <span>🔥</span>
-              {streak < 3 && `${streak} jour${streak > 1 ? 's' : ''} de suite.`}
-              {streak >= 3 && streak < 7 && `${streak} jours. T'as pris le pli.`}
-              {streak >= 7 && `${streak} jours sans lâcher.`}
-            </div>
-          )}
-          {scoreJour === 0 && (
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5">
-              {stats.a_relancer} client{stats.a_relancer > 1 ? 's' : ''} n'attendent que toi
-            </div>
-          )}
-        </div>
-
-        {/* Objectif hebdo */}
-        <div className="w-full mt-1">
-          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span>Objectif semaine</span>
-            <span className="font-semibold text-gray-700">{Math.min(scoreJour, OBJECTIF_HEBDO)}/{OBJECTIF_HEBDO} relances</span>
-          </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${Math.min(100, (scoreJour / OBJECTIF_HEBDO) * 100)}%`,
-                background: scoreJour >= OBJECTIF_HEBDO ? '#10B981' : '#6366F1'
-              }}
-            />
-          </div>
-          {scoreJour >= OBJECTIF_HEBDO && (
-            <div className="text-xs text-emerald-600 font-semibold mt-1">🎉 Objectif atteint cette semaine !</div>
-          )}
-        </div>
-      </div>
-
-      {/* Badges */}
-      {scoreTotal > 0 && <BadgesList scoreTotal={scoreTotal} streak={streak} />}
-
-      {/* Rappels — collapsible */}
-      {rappelsVisible.length > 0 && (
-        <section>
-          <button
-            onClick={() => setRappelsOpen(p => !p)}
-            className="w-full flex items-center gap-2 mb-2"
-          >
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Rappels ({rappelsVisible.length})
-            </h2>
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400">{rappelsOpen ? '▲ Réduire' : '▼ Voir'}</span>
-          </button>
-          {rappelsOpen && (
-            <div className="space-y-2">
-              {rappelsVisible.slice(0, rappelsShowAll ? undefined : 2).map(rappel => (
-                <div key={rappel.id} className="flex items-center gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
-                    {rappel.type === 'appel' ? '📞' : '✉️'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Link href={`/dossiers/${rappel.dossier?.id}`} className="font-medium text-sm text-gray-900 truncate block hover:underline">
-                      {rappel.dossier?.societe || '—'}
-                    </Link>
-                    <div className="text-xs text-gray-500 truncate">{rappel.notes || 'Pas de note'}</div>
-                  </div>
-                  <button onClick={() => markRappelDone(rappel.id)} className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700">✓ Fait</button>
-                </div>
-              ))}
-              {rappelsVisible.length > 2 && (
-                <button onClick={() => setRappelsShowAll(p => !p)} className="w-full text-xs text-gray-400 hover:text-indigo-500 py-1">
-                  {rappelsShowAll ? 'Voir moins' : `+ ${rappelsVisible.length - 2} autres rappels`}
-                </button>
-              )}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ========= TOOLTIP PREMIER PAS ========= */}
-      {showTooltip && (
-        <div className="fixed bottom-28 sm:bottom-8 right-4 z-40 max-w-xs animate-slide-up">
-          <div className="bg-indigo-600 text-white rounded-2xl px-4 py-3 shadow-xl relative">
-            <button onClick={() => setShowTooltip(false)}
-              className="absolute top-2 right-3 text-indigo-200 hover:text-white text-lg leading-none">×</button>
-            <div className="text-sm font-bold mb-1">👋 Par où commencer ?</div>
-            <div className="text-xs text-indigo-100 mb-3">Va dans <strong>Importer</strong> pour charger tes factures impayées en quelques secondes.</div>
-            <a href="/import" onClick={() => setShowTooltip(false)}
-              className="block text-center text-xs font-bold bg-white text-indigo-600 rounded-xl py-2 hover:bg-indigo-50 transition-colors">
-              📥 Importer mes factures →
-            </a>
-            {/* Flèche pointant vers le bas */}
-            <div className="absolute -bottom-2 right-8 w-4 h-4 bg-indigo-600 rotate-45" />
-          </div>
-        </div>
-      )}
+      {/* ============ COLONNE GAUCHE — Action ============ */}
+      <div className="w-full lg:w-[55%] space-y-5">
 
       {/* ========= ÉTAT VIDE INTELLIGENT ========= */}
       {!onboarding.hasImported && (
-        <div className="bg-white border-2 border-dashed border-indigo-200 rounded-2xl p-8 text-center mb-6 animate-fade-in">
+        <div className="bg-white border-2 border-dashed border-indigo-200 rounded-2xl p-8 text-center animate-fade-in">
           <div className="text-5xl mb-4">📂</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Par où commencer ?</h2>
           <p className="text-sm text-gray-400 mb-6">Importe tes factures impayées pour commencer à relancer</p>
@@ -588,9 +476,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
         />
       )}
 
-      {/* === 2 PILES CÔTE À CÔTE DESKTOP === */}
-      {/* STEPPER */}
-      <div className="flex items-stretch gap-0 mb-5 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+      {/* === STEPPER === */}
+      <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
         <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-orange-50 border-r border-orange-100">
           <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm">1</div>
           <div>
@@ -609,6 +496,8 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
           </div>
         </div>
       </div>
+
+      {/* === 2 PILES CÔTE À CÔTE === */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
       {/* === PILE ENRICHIR === */}
@@ -856,15 +745,134 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
         {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
       </div>
 
-      {/* === MINI FEED === */}
-      {liveFeed.length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
-            <div className="flex-1 h-px bg-gray-100" />
+      </div>{/* fin colonne gauche */}
+
+      {/* ============ COLONNE DROITE — Info ============ */}
+      <div className="w-full lg:w-[45%] space-y-5 lg:sticky lg:top-6">
+
+        {/* Hero */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm card-hover">
+          <div className="text-sm text-gray-400 mb-1">Ton argent qui dort</div>
+          <div className="text-4xl font-bold text-gray-900 mb-3">{montantFormate}</div>
+          <div className="text-sm text-gray-600 mb-4 leading-snug">{getHeroText(montantFormate)}</div>
+          {(stats.montant_recupere || 0) > 0 && (
+            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mb-3">
+              <span className="text-emerald-500 text-sm">✅</span>
+              <span className="text-xs font-semibold text-emerald-700">
+                {formatMontant(stats.montant_recupere || 0)} récupérés ce mois
+              </span>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {scoreJour > 0 && (
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
+                <span>💪</span>{scoreJour === 1 ? "1 relance aujourd'hui. C'est un début." : `${scoreJour} relances. T'es en feu.`}
+              </div>
+            )}
+            {streak > 0 && (
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
+                <span>🔥</span>
+                {streak < 3 && `${streak} jour${streak > 1 ? 's' : ''} de suite.`}
+                {streak >= 3 && streak < 7 && `${streak} jours. T'as pris le pli.`}
+                {streak >= 7 && `${streak} jours sans lâcher.`}
+              </div>
+            )}
+            {scoreJour === 0 && (
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5">
+                {stats.a_relancer} client{stats.a_relancer > 1 ? 's' : ''} n'attendent que toi
+              </div>
+            )}
           </div>
-          <div className="space-y-1">
-            {liveFeed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
+          {/* Objectif hebdo */}
+          <div className="w-full mt-3">
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span>Objectif semaine</span>
+              <span className="font-semibold text-gray-700">{Math.min(scoreJour, OBJECTIF_HEBDO)}/{OBJECTIF_HEBDO} relances</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, (scoreJour / OBJECTIF_HEBDO) * 100)}%`,
+                  background: scoreJour >= OBJECTIF_HEBDO ? '#10B981' : '#6366F1'
+                }}
+              />
+            </div>
+            {scoreJour >= OBJECTIF_HEBDO && (
+              <div className="text-xs text-emerald-600 font-semibold mt-1">🎉 Objectif atteint cette semaine !</div>
+            )}
+          </div>
+        </div>
+
+        {/* Badges */}
+        {scoreTotal > 0 && <BadgesList scoreTotal={scoreTotal} streak={streak} />}
+
+        {/* Rappels */}
+        {rappelsVisible.length > 0 && (
+          <section className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <button onClick={() => setRappelsOpen(p => !p)} className="w-full flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rappels ({rappelsVisible.length})</h2>
+              <div className="flex-1 h-px bg-gray-100" />
+              <span className="text-xs text-gray-400">{rappelsOpen ? '▲' : '▼'}</span>
+            </button>
+            {rappelsOpen && (
+              <div className="space-y-2">
+                {rappelsVisible.slice(0, rappelsShowAll ? undefined : 2).map(rappel => (
+                  <div key={rappel.id} className="flex items-center gap-3 p-3 rounded-xl border border-orange-200 bg-orange-50">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
+                      {rappel.type === 'appel' ? '📞' : '✉️'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/dossiers/${rappel.dossier?.id}`} className="font-medium text-sm text-gray-900 truncate block hover:underline">
+                        {rappel.dossier?.societe || '—'}
+                      </Link>
+                      <div className="text-xs text-gray-500 truncate">{rappel.notes || 'Pas de note'}</div>
+                    </div>
+                    <button onClick={() => markRappelDone(rappel.id)} className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700">✓ Fait</button>
+                  </div>
+                ))}
+                {rappelsVisible.length > 2 && (
+                  <button onClick={() => setRappelsShowAll(p => !p)} className="w-full text-xs text-gray-400 hover:text-indigo-500 py-1">
+                    {rappelsShowAll ? 'Voir moins' : `+ ${rappelsVisible.length - 2} autres rappels`}
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Feed realtime */}
+        {liveFeed.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
+              <div className="flex-1 h-px bg-gray-100" />
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Temps réel" />
+            </div>
+            <div className="space-y-1">
+              {liveFeed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
+            </div>
+          </div>
+        )}
+
+      </div>{/* fin colonne droite */}
+
+      </div>{/* fin flex 2 colonnes */}
+
+      {/* ========= TOOLTIP PREMIER PAS ========= */}
+      {showTooltip && (
+        <div className="fixed bottom-28 sm:bottom-8 right-4 z-40 max-w-xs animate-slide-up">
+          <div className="bg-indigo-600 text-white rounded-2xl px-4 py-3 shadow-xl relative">
+            <button onClick={() => setShowTooltip(false)}
+              className="absolute top-2 right-3 text-indigo-200 hover:text-white text-lg leading-none">×</button>
+            <div className="text-sm font-bold mb-1">👋 Par où commencer ?</div>
+            <div className="text-xs text-indigo-100 mb-3">Va dans <strong>Importer</strong> pour charger tes factures impayées en quelques secondes.</div>
+            <a href="/import" onClick={() => setShowTooltip(false)}
+              className="block text-center text-xs font-bold bg-white text-indigo-600 rounded-xl py-2 hover:bg-indigo-50 transition-colors">
+              📥 Importer mes factures →
+            </a>
+            <div className="absolute -bottom-2 right-8 w-4 h-4 bg-indigo-600 rotate-45" />
           </div>
         </div>
       )}
