@@ -12,7 +12,7 @@ const inter = Inter({
 
 export const viewport = { themeColor: '#6366F1' }
 
-const GA_ID = 'G-XXXXXXXXXX' // À remplacer par ton vrai ID Google Analytics
+const GA_ID = 'G-TP33SH88KW' // À remplacer par ton vrai ID Google Analytics
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
