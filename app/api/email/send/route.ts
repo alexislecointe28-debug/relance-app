@@ -92,6 +92,23 @@ export async function POST(req: NextRequest) {
       membre_id: membre?.id,
     })
 
+    // Si email saisi manuellement → mettre à jour le contact du dossier
+    if (email_destinataire) {
+      const { data: contact } = await supabase
+        .from('contacts')
+        .select('id, email')
+        .eq('dossier_id', dossier_id)
+        .single()
+
+      if (contact && !contact.email) {
+        // Contact existe sans email → on complète
+        await supabase.from('contacts').update({ email: email_destinataire }).eq('id', contact.id)
+      } else if (!contact) {
+        // Pas de contact → on crée avec juste l'email
+        await supabase.from('contacts').insert({ dossier_id, email: email_destinataire })
+      }
+    }
+
     return NextResponse.json({ success: true })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
