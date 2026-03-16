@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import TimerWrapper from '@/components/ui/TimerWrapper'
 import BottomNav from '@/components/ui/BottomNav'
+import Script from 'next/script'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -10,6 +11,8 @@ const inter = Inter({
 })
 
 export const viewport = { themeColor: '#6366F1' }
+
+const GA_ID = 'G-XXXXXXXXXX' // À remplacer par ton vrai ID Google Analytics
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
@@ -19,8 +22,39 @@ export const metadata: Metadata = {
     title: 'Paynelope',
   },
   formatDetection: { telephone: false },
-  title: 'Paynelope',
-  description: "Rends l’argent.",
+  metadataBase: new URL('https://paynelope.com'),
+  title: {
+    default: 'Paynelope — Recouvrez vos impayés facilement',
+    template: '%s | Paynelope',
+  },
+  description: 'Paynelope est le CRM de recouvrement pensé pour les TPE. Relancez vos clients, récupérez votre argent. Simple, efficace, sans engagement.',
+  keywords: ['recouvrement', 'impayés', 'relance client', 'CRM', 'TPE', 'facture impayée', 'gestion créances'],
+  authors: [{ name: 'Paynelope' }],
+  creator: 'Paynelope',
+  publisher: 'Paynelope',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: 'https://paynelope.com',
+    siteName: 'Paynelope',
+    title: 'Paynelope — Recouvrez vos impayés facilement',
+    description: 'Le CRM de recouvrement pour les TPE. Relancez vos clients, récupérez votre argent.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Paynelope' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Paynelope — Recouvrez vos impayés facilement',
+    description: 'Le CRM de recouvrement pour les TPE. Relancez vos clients, récupérez votre argent.',
+    images: ['/og-image.png'],
+  },
+  alternates: {
+    canonical: 'https://paynelope.com',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -44,6 +78,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <TimerWrapper />
         <BottomNav />
+
+        {/* Google Analytics */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}', { page_path: window.location.pathname });
+        ` }} />
+
+        {/* Tawk.to */}
         <script dangerouslySetInnerHTML={{ __html: `
           var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
           (function(){
