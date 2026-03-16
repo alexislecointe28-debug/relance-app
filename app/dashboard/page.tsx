@@ -60,6 +60,23 @@ export default async function DashboardPage() {
   const avec_contact = dossiersWithCount.filter(d => d.contact).length
   const pct_qualifies = dossiersWithCount.length > 0 ? Math.round((avec_contact / dossiersWithCount.length) * 100) : 0
 
+  // Montant récupéré ce mois (dossiers passés en résolu ce mois)
+  const debutMois = new Date()
+  debutMois.setDate(1)
+  debutMois.setHours(0, 0, 0, 0)
+
+  const { data: resolusMonth } = await supabase
+    .from('actions')
+    .select('dossier:dossiers(montant_total)')
+    .eq('type', 'note')
+    .ilike('notes', '%résolu%')
+    .gte('created_at', debutMois.toISOString())
+
+  const montant_recupere = (resolusMonth || []).reduce((sum: number, a: any) => {
+    const m = Array.isArray(a.dossier) ? a.dossier[0]?.montant_total : a.dossier?.montant_total
+    return sum + (m || 0)
+  }, 0)
+
   // Stats pour la checklist onboarding
   const { count: actionsCount } = await supabase
     .from('actions')
@@ -77,7 +94,7 @@ export default async function DashboardPage() {
         dossiers={dossiersWithCount as any}
         rappels={(rappels || []) as any}
         feed={(feed || []) as any}
-        stats={{ total_montant, dossiers_actifs, a_relancer, pct_qualifies }}
+        stats={{ total_montant, dossiers_actifs, a_relancer, pct_qualifies, montant_recupere }}
         onboarding={{ hasImported, hasIdentified, hasRelanced }}
       />
     </div>

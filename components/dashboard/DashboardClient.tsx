@@ -22,7 +22,7 @@ interface Props {
   dossiers: (Dossier & { nb_factures: number })[]
   rappels: (Action & { dossier: Dossier })[]
   feed: FeedItem[]
-  stats: { total_montant: number; dossiers_actifs: number; a_relancer: number; pct_qualifies: number }
+  stats: { total_montant: number; dossiers_actifs: number; a_relancer: number; pct_qualifies: number; montant_recupere?: number }
   onboarding: { hasImported: boolean; hasIdentified: boolean; hasRelanced: boolean }
 }
 
@@ -432,6 +432,14 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
         <div className="text-sm text-gray-400 mb-1">Ton argent qui dort</div>
         <div className="text-4xl font-bold text-gray-900 mb-3">{montantFormate}</div>
         <div className="text-sm text-gray-600 mb-4 leading-snug">{getHeroText(montantFormate)}</div>
+        {(stats.montant_recupere || 0) > 0 && (
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 mb-3">
+            <span className="text-emerald-500 text-sm">✅</span>
+            <span className="text-xs font-semibold text-emerald-700">
+              {formatMontant(stats.montant_recupere || 0)} récupérés ce mois
+            </span>
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           {scoreJour > 0 && (
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5">
