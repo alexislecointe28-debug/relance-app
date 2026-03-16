@@ -12,7 +12,7 @@ export default async function ParrainagePage() {
 
   const { data: org } = await supabase.from('organisations').select('id, nom').single()
   const codeParrainage = org?.id?.slice(0, 8).toUpperCase() || 'XXXXXXXX'
-  const lienParrainage = `https://relance-app.vercel.app/signup?ref=${codeParrainage}`
+  const lienParrainage = `https://paynelope.com/signup?ref=${codeParrainage}`
 
   return (
     <div className="min-h-screen bg-canvas">

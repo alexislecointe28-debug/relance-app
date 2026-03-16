@@ -63,7 +63,7 @@ export default function ParrainageClient({ lienParrainage }: { lienParrainage: s
 
       <p className="text-xs text-gray-400 text-center">
         Le mois offert est crédité automatiquement après la 1ère facture de ton filleul.
-        Contacte-nous à <a href="mailto:contact@paynelope.fr" className="text-indigo-500 hover:underline">contact@paynelope.fr</a> pour toute question.
+        Contacte-nous à <a href="mailto:contact@paynelope.com" className="text-indigo-500 hover:underline">contact@paynelope.com</a> pour toute question.
       </p>
     </main>
   )

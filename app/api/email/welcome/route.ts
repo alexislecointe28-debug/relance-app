@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
               En plan Démo tu as accès à <strong>3 dossiers</strong> pour tester. Passe au plan Solo ou Agence quand tu veux.
             </p>
             <div style="margin: 24px 0; text-align: center;">
-              <a href="https://relance-app.vercel.app/dashboard" 
+              <a href="https://paynelope.com/dashboard" 
                 style="background: #6366F1; color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 15px; display: inline-block;">
                 Accéder à mon espace →
               </a>
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
             <hr style="border: none; border-top: 1px solid #F3F4F6; margin: 24px 0;" />
             <p style="color: #9CA3AF; font-size: 12px; text-align: center;">
               Des questions ? Réponds directement à cet email.<br/>
-              <a href="https://relance-app.vercel.app/legal" style="color: #9CA3AF;">CGU & Mentions légales</a>
+              <a href="https://paynelope.com/legal" style="color: #9CA3AF;">CGU & Mentions légales</a>
             </p>
           </div>
         </div>

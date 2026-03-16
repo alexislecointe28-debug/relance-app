@@ -13,7 +13,7 @@ export default function LegalPage() {
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-3">1. Éditeur</h2>
           <p>Paynelope est un service édité par un auto-entrepreneur basé en France — SIRET : 481 640 720 00027</p>
-          <p className="mt-1">Contact : <a href="mailto:contact@paynelope.fr" className="text-indigo-600 hover:underline">contact@paynelope.fr</a></p>
+          <p className="mt-1">Contact : <a href="mailto:contact@paynelope.com" className="text-indigo-600 hover:underline">contact@paynelope.com</a></p>
         </div>
 
         <div>
@@ -30,7 +30,7 @@ export default function LegalPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-3">4. Données personnelles & RGPD</h2>
           <p>Les données saisies dans Paynelope (coordonnées de débiteurs, montants, historiques) restent la propriété exclusive de l&apos;utilisateur. Paynelope n&apos;exploite pas ces données à des fins commerciales.</p>
           <p className="mt-2">Données collectées : email, nom de l&apos;organisation, données de facturation (Stripe). Hébergement : Supabase (PostgreSQL, Union Européenne) et Vercel (CDN mondial). Paiement : Stripe (aucune donnée bancaire ne transite par nos serveurs).</p>
-          <p className="mt-2">Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression de vos données. Pour exercer ces droits : <a href="mailto:contact@paynelope.fr" className="text-indigo-600 hover:underline">contact@paynelope.fr</a></p>
+          <p className="mt-2">Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression de vos données. Pour exercer ces droits : <a href="mailto:contact@paynelope.com" className="text-indigo-600 hover:underline">contact@paynelope.com</a></p>
         </div>
 
         <div>
