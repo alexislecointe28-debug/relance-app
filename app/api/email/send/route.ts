@@ -6,7 +6,7 @@ import { Resend } from 'resend'
 
 const TEMPLATES = {
   cordial: (societe: string, montant: number, signature: string) => ({
-    subject: `Rappel de facture impayée — ${societe}`,
+    subject: `Règlement en attente — ${societe}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <p>Madame, Monsieur,</p>
@@ -20,7 +20,7 @@ const TEMPLATES = {
     `
   }),
   ferme: (societe: string, montant: number, signature: string) => ({
-    subject: `Relance — Facture impayée ${societe} — Action requise`,
+    subject: `Rappel important — ${societe}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <p>Madame, Monsieur,</p>
@@ -33,7 +33,7 @@ const TEMPLATES = {
     `
   }),
   mise_en_demeure: (societe: string, montant: number, signature: string, siret: string) => ({
-    subject: `MISE EN DEMEURE — ${societe} — ${montant.toFixed(2)} €`,
+    subject: `Dernier rappel avant procédure — ${societe}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <p><strong>MISE EN DEMEURE</strong></p>
