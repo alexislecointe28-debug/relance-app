@@ -10,6 +10,13 @@ export default async function DashboardPage() {
   const { data: org } = await supabase.from('organisations').select('plan').single()
   const plan = org?.plan || 'demo'
 
+  // Compter les dossiers pour la limite démo
+  let demoDossiersCount = 0
+  if (plan === 'demo') {
+    const { count } = await supabase.from('dossiers').select('*', { count: 'exact', head: true }).is('archived_at', null)
+    demoDossiersCount = count || 0
+  }
+
   // Récupérer le membre courant pour filtrage agence
   const { data: currentMembre } = await supabase.from('membres').select('id, role').single()
   const isAdmin = currentMembre?.role === 'admin'
@@ -89,7 +96,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-canvas">
       <Header />
-      <DemoBanner plan={plan} />
+      <DemoBanner plan={plan} dossiersCount={demoDossiersCount} />
       <DashboardClient
         dossiers={dossiersWithCount as any}
         rappels={(rappels || []) as any}

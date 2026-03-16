@@ -113,7 +113,7 @@ export default function ImportClient() {
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Erreur serveur' }))
         if (errorData.error === 'LIMITE_DEMO') {
-          setError('🔒 Plan Démo limité à 3 dossiers. Passez au plan Solo sur /pricing pour continuer.')
+          setError('LIMITE_DEMO')
           setLoading(false)
           return
         }
@@ -169,7 +169,23 @@ export default function ImportClient() {
         <p className="text-sm text-gray-400 mt-1">Excel recommandé — la détection des colonnes est automatique.</p>
       </div>
 
-      {error && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{error}</p>}
+      {error === 'LIMITE_DEMO' && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center space-y-3">
+          <div className="text-3xl">🔒</div>
+          <div className="font-bold text-gray-900 text-lg">Limite du plan Démo atteinte</div>
+          <p className="text-sm text-gray-500">Tu as utilisé tes 3 dossiers gratuits.<br/>Passe au plan Solo pour continuer à relancer sans limite.</p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+            <a href="/pricing" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm">
+              Passer au Solo — 49€/mois →
+            </a>
+            <a href="/dossiers" className="px-6 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold text-sm transition-colors">
+              Voir mes dossiers
+            </a>
+          </div>
+          <p className="text-xs text-gray-400">Sans engagement · Résiliable à tout moment</p>
+        </div>
+      )}
+      {error && error !== 'LIMITE_DEMO' && <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-3">{error}</p>}
 
       {/* STEP 1 — UPLOAD */}
       {step === 'upload' && (

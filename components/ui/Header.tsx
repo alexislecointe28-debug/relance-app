@@ -70,11 +70,12 @@ export default function Header() {
   )
 }
 
-export function DemoBanner({ plan }: { plan?: string }) {
+export function DemoBanner({ plan, dossiersCount = 0 }: { plan?: string, dossiersCount?: number }) {
   if (plan && plan !== 'demo') return null
+  const restants = Math.max(0, 3 - dossiersCount)
   return (
     <div className="bg-indigo-600 text-white text-xs text-center py-2 px-4 flex items-center justify-center gap-3">
-      <span>🎯 Plan Démo — limité à 3 dossiers</span>
+      <span>🎯 Plan Démo — {restants > 0 ? `${restants} dossier${restants > 1 ? 's' : ''} restant${restants > 1 ? 's' : ''}` : 'limite atteinte'}</span>
       <a href="/pricing" className="bg-white text-indigo-600 font-semibold px-3 py-1 rounded-full hover:bg-indigo-50 transition-colors">
         Passer au Solo →
       </a>
