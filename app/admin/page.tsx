@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 export default async function AdminPage() {
   const supabase = createServerSupabaseClient()
+  const serviceSupabase = createServiceSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -17,29 +18,29 @@ export default async function AdminPage() {
 
   if (!membre?.superadmin) redirect('/')
 
-  // Charger toutes les orgs avec stats
-  const { data: orgs } = await supabase
+  // Charger toutes les orgs avec stats (service role = bypass RLS)
+  const { data: orgs } = await serviceSupabase
     .from('organisations')
     .select('*')
     .order('created_at', { ascending: false })
 
   // Stats par org
   const orgsWithStats = await Promise.all((orgs || []).map(async (org) => {
-    const { data: dossiers } = await supabase
+    const { data: dossiers } = await serviceSupabase
       .from('dossiers')
       .select('montant_total, statut, created_at')
       .eq('organisation_id', org.id)
 
-    const { data: membres } = await supabase
+    const { data: membres } = await serviceSupabase
       .from('membres')
       .select('email, role, created_at')
       .eq('organisation_id', org.id)
 
-    const { data: lastAction } = await supabase
+    const { data: lastAction } = await serviceSupabase
       .from('actions')
       .select('created_at')
-      .in('dossier_id', 
-        (await supabase.from('dossiers').select('id').eq('organisation_id', org.id)).data?.map(d => d.id) || []
+      .in('dossier_id',
+        (await serviceSupabase.from('dossiers').select('id').eq('organisation_id', org.id)).data?.map(d => d.id) || []
       )
       .order('created_at', { ascending: false })
       .limit(1)
