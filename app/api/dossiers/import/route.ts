@@ -172,6 +172,7 @@ export async function POST(request: Request) {
     success: true,
     imported,
     skipped,
+    limite_atteinte: demoRemaining !== Infinity && groupedEntries.length >= demoRemaining,
     message: `${imported} facture(s) importée(s), ${skipped} doublon(s) ignoré(s)`
   })
 }
