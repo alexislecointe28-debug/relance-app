@@ -83,7 +83,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, textAlign: 'center' }}>
           {[
             { value: '165 000 €', label: "d'impayés gérés dès le 1er mois client" },
-            { value: '22 140 €', label: 'récupérés en 3 semaines (Atout Film)' },
+            { value: '100 000 €', label: 'récupérés en 3 semaines (Groupe Servitel)' },
             { value: '< 2 min', label: 'pour importer vos factures et commencer' },
           ].map(s => (
             <div key={s.label}>
@@ -98,10 +98,10 @@ export default function LandingPage() {
       <section style={{ background: '#F5F7FF', padding: '64px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
           <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: 'clamp(22px, 3vw, 32px)', color: '#111', lineHeight: 1.4, marginBottom: 24 }}>
-            &ldquo;On avait 165 000 € d&apos;impayés qui dormaient. En 3 semaines, on en a récupéré 22 000 €.&rdquo;
+            &ldquo;On avait 165 000 € d&apos;impayés qui dormaient. En 3 semaines, on en a récupéré 100 000 €.&rdquo;
           </p>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#6366F1' }}>Atout Film</div>
-          <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>Production audiovisuelle</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#6366F1' }}>Groupe Servitel</div>
+          <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>Services aux entreprises</div>
         </div>
       </section>
 
