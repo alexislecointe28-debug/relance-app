@@ -218,16 +218,17 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
     loadStreak()
   }, [])
 
-  const toEnrich = useMemo(() =>
-    [...dossiers].filter(d => !d.contact && d.statut !== 'resolu' && !skippedEnrich.has(d.id))
-      .sort((a, b) => b.montant_total - a.montant_total),
-    [dossiers, skippedEnrich]
-  )
-  const toRelance = useMemo(() =>
-    [...dossiers].filter(d => d.statut !== 'resolu' && !skippedRelance.has(d.id))
-      .sort((a, b) => b.jours_retard - a.jours_retard),
-    [dossiers, skippedRelance]
-  )
+  const toEnrich = useMemo(() => {
+    const notSkipped = [...dossiers].filter(d => !d.contact && d.statut !== 'resolu' && !skippedEnrich.has(d.id)).sort((a, b) => b.montant_total - a.montant_total)
+    const skipped = [...dossiers].filter(d => !d.contact && d.statut !== 'resolu' && skippedEnrich.has(d.id)).sort((a, b) => b.montant_total - a.montant_total)
+    return [...notSkipped, ...skipped]
+  }, [dossiers, skippedEnrich])
+
+  const toRelance = useMemo(() => {
+    const notSkipped = [...dossiers].filter(d => d.statut !== 'resolu' && !skippedRelance.has(d.id)).sort((a, b) => b.jours_retard - a.jours_retard)
+    const skipped = [...dossiers].filter(d => d.statut !== 'resolu' && skippedRelance.has(d.id)).sort((a, b) => b.jours_retard - a.jours_retard)
+    return [...notSkipped, ...skipped]
+  }, [dossiers, skippedRelance])
 
   const safeEnrichIdx = Math.min(enrichIdx, Math.max(0, toEnrich.length - 1))
   const currentEnrich = toEnrich[safeEnrichIdx] || null
@@ -738,12 +739,6 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
       </CardStack>
 
       </div>{/* fin grid 2 colonnes */}
-
-      {/* Liens reset */}
-      <div className="flex justify-center gap-6 text-xs text-gray-300">
-        {skippedEnrich.size > 0 && <button onClick={() => setSkippedEnrich(new Set())} className="hover:text-indigo-500">Revoir {skippedEnrich.size} passé{skippedEnrich.size > 1 ? 's' : ''} (identifier)</button>}
-        {skippedRelance.size > 0 && <button onClick={() => setSkippedRelance(new Set())} className="hover:text-indigo-500">Revoir {skippedRelance.size} passé{skippedRelance.size > 1 ? 's' : ''} (relance)</button>}
-      </div>
 
       </div>{/* fin colonne gauche */}
 
