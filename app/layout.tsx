@@ -22,6 +22,14 @@ export const metadata: Metadata = {
     title: 'Paynelope',
   },
   formatDetection: { telephone: false },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icon-192.png' }],
+  },
   metadataBase: new URL('https://paynelope.com'),
   title: {
     default: 'Paynelope — Recouvrez vos impayés facilement',
