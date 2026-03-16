@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
     await supabase.from('actions').insert({
       dossier_id,
       type: 'email',
+      niveau_email: niveau,
       notes: `Email ${niveau} envoyé à ${email_destinataire}${notes ? ' — ' + notes : ''}`,
       membre_id: membre?.id,
     })
