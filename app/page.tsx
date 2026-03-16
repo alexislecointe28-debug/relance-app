@@ -183,7 +183,7 @@ export default function LandingPage() {
             <Link href="/legal" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>CGU & Mentions légales</Link>
             <a href="mailto:contact@paynelope.com" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>contact@paynelope.com</a>
           </div>
-          <div style={{ fontSize: 13, color: '#bbb' }}>© 2026 Paynelope — SIRET 48164072000027</div>
+          <div style={{ fontSize: 13, color: '#bbb' }}>© 2026 Paynelope</div>
         </div>
       </footer>
     </div>
