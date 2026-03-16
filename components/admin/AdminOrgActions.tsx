@@ -8,13 +8,21 @@ interface Membre {
   banned?: boolean
 }
 
+interface Connexion {
+  ip: string
+  user_agent: string
+  email: string
+  created_at: string
+}
+
 interface Props {
   orgId: string
   orgNom: string
   membres: Membre[]
+  connexions: Connexion[]
 }
 
-export default function AdminOrgActions({ orgId, orgNom, membres }: Props) {
+export default function AdminOrgActions({ orgId, orgNom, membres, connexions }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [newPassword, setNewPassword] = useState('')
@@ -130,6 +138,26 @@ export default function AdminOrgActions({ orgId, orgNom, membres }: Props) {
           >
             🗑 Supprimer l'organisation
           </button>
+
+          {/* Historique connexions */}
+          {connexions.length > 0 && (
+            <div className="mt-2">
+              <div className="text-xs font-semibold text-gray-500 mb-1.5">Connexions (7 derniers jours)</div>
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {connexions.map((c, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5 gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-gray-600 flex-shrink-0">{c.ip}</span>
+                      <span className="text-gray-400 truncate">{c.email}</span>
+                    </div>
+                    <span className="text-gray-300 flex-shrink-0">
+                      {new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

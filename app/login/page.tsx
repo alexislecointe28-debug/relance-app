@@ -23,6 +23,7 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
+    fetch('/api/auth/log-connexion', { method: 'POST' }).catch(() => {})
     router.push('/')
     router.refresh()
   }

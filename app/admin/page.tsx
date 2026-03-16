@@ -57,6 +57,18 @@ export default async function AdminPage() {
     const nbActifs = (dossiers || []).filter(d => d.statut !== 'resolu').length
     const nbResolus = (dossiers || []).filter(d => d.statut === 'resolu').length
 
+    // Connexions récentes (7 derniers jours)
+    const since7d = new Date(Date.now() - 7 * 86400000).toISOString()
+    const { data: connexions } = await serviceSupabase
+      .from('connexions')
+      .select('ip, user_agent, email, created_at')
+      .eq('organisation_id', org.id)
+      .gte('created_at', since7d)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    const uniqueIPs = Array.from(new Set((connexions || []).map(c => c.ip)))
+
     return {
       ...org,
       nb_dossiers: dossiers?.length || 0,
@@ -66,6 +78,8 @@ export default async function AdminPage() {
       nb_membres: membresWithBan?.length || 0,
       membres: membresWithBan || [],
       last_action: lastAction?.created_at || null,
+      connexions: connexions || [],
+      unique_ips: uniqueIPs,
     }
   }))
 
@@ -150,6 +164,11 @@ export default async function AdminPage() {
                           Actif
                         </span>
                       )}
+                      {org.unique_ips.length > 2 && (
+                        <span className="text-xs bg-orange-50 text-orange-600 border border-orange-100 rounded-full px-2 py-0.5">
+                          ⚠️ {org.unique_ips.length} IPs / 7j
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-gray-400 mt-1">
                       {org.membres.map((m: any) => m.email).join(', ')}
@@ -167,7 +186,7 @@ export default async function AdminPage() {
                     <div className="text-xs text-gray-300 mt-1">Inscrit {formatDate(org.created_at)}</div>
                   </div>
                 </div>
-                <AdminOrgActions orgId={org.id} orgNom={org.nom} membres={org.membres} />
+                <AdminOrgActions orgId={org.id} orgNom={org.nom} membres={org.membres} connexions={org.connexions} />
               </div>
             )
           })}
