@@ -971,12 +971,6 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
       setSending(false)
       return
     }
-    const { data: membre } = await supabase.from('membres').select('id').single()
-    await supabase.from('actions').insert({
-      dossier_id: dossier.id, type: 'email', niveau_email: niveau,
-      notes: (emailNotes || '') + (emailDest ? ' — envoyé à ' + emailDest : ''),
-      membre_id: membre?.id
-    })
     setSending(false)
     setSent(true)
     // Ne pas passer automatiquement à la carte suivante — l'utilisateur ferme manuellement
