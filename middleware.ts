@@ -23,14 +23,18 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const publicPaths = ['/login', '/signup', '/pricing', '/legal', '/onboarding', '/auth/callback', '/forgot-password', '/reset-password', '/api', '/manifest.json', '/icon-', '/sw.js', '/pdf.worker', '/sitemap.xml', '/robots.txt']
-  const isPublic = publicPaths.some(p => request.nextUrl.pathname.startsWith(p))
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/legal', '/onboarding', '/auth/callback', '/forgot-password', '/reset-password', '/api', '/manifest.json', '/icon-', '/sw.js', '/pdf.worker', '/sitemap.xml', '/robots.txt']
+  const isPublic = publicPaths.some(p => request.nextUrl.pathname === p || (p !== '/' && request.nextUrl.pathname.startsWith(p)))
 
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   if (user && request.nextUrl.pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  if (user && request.nextUrl.pathname === '/') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
