@@ -288,6 +288,20 @@ function TimelineItem({ action, onMarkDone }: { action: Action & { membre?: any 
             <span className="text-xs font-medium text-gray-700 capitalize">{action.type}</span>
             {action.resultat && <span className="ml-2 text-xs text-gray-500">· {getResultatLabel(action.resultat)}</span>}
             {action.niveau_email && <span className="ml-2 text-xs text-gray-500">· {getNiveauEmailLabel(action.niveau_email)}</span>}
+            {action.type === 'email' && action.email_status && (() => {
+              const badges: Record<string, { icon: string, color: string, label: string }> = {
+                sent:       { icon: '⏳', color: 'text-gray-400', label: 'Envoyé' },
+                delivered:  { icon: '✉️', color: 'text-blue-500', label: 'Reçu' },
+                opened:     { icon: '👁️', color: 'text-indigo-600', label: 'Ouvert' },
+                clicked:    { icon: '🖱️', color: 'text-emerald-600', label: 'Cliqué' },
+                bounced:    { icon: '❌', color: 'text-red-500', label: 'Bounced' },
+                complained: { icon: '🚫', color: 'text-orange-500', label: 'Spam' },
+              }
+              const b = badges[action.email_status]
+              return b ? (
+                <span className={`ml-2 text-xs font-medium ${b.color}`}>{b.icon} {b.label}</span>
+              ) : null
+            })()}
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs text-gray-400">{formatDate(action.created_at)}</span>

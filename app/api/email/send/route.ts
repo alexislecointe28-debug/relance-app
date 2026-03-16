@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   const { data: membre } = await supabase.from('membres').select('id').eq('user_id', user.id).single()
 
   try {
-    await resend.emails.send({
+    const { data: emailData } = await resend.emails.send({
       from: `${fromName} <relance@paynelope.com>`,
       to: [email_destinataire],
       subject: template.subject,
@@ -106,6 +106,8 @@ export async function POST(req: NextRequest) {
       niveau_email: niveau,
       notes: `Email ${niveau} envoyé à ${email_destinataire}${notes ? ' — ' + notes : ''}`,
       membre_id: membre?.id,
+      resend_email_id: emailData?.id || null,
+      email_status: 'sent',
     })
 
     // Si email saisi manuellement → mettre à jour le contact du dossier

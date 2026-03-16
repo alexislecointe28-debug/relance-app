@@ -74,6 +74,8 @@ export interface Action {
   rappel_fait: boolean
   niveau_email: NiveauEmail | null
   created_at: string
+  resend_email_id?: string | null
+  email_status?: 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained' | null
   // Joined
   membre?: Membre
 }
