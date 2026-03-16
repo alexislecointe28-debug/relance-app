@@ -86,7 +86,7 @@ export default function TimerFloat() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="fixed bottom-24 sm:bottom-6 right-20 sm:right-24 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-24 sm:bottom-6 right-20 sm:right-28 z-50 flex flex-col items-end gap-2">
 
       {/* Panel */}
       {open && (
@@ -174,7 +174,7 @@ export default function TimerFloat() {
         ) : (
           <>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span className="text-indigo-600 text-xs font-semibold">Pomodoro</span>
+            <span className="text-indigo-600 text-xs font-semibold">Focus</span>
           </>
         )}
       </button>
