@@ -52,6 +52,9 @@ export const metadata: Metadata = {
     description: 'Le CRM de recouvrement pour les TPE. Relancez vos clients, récupérez votre argent.',
     images: ['/og-image.png'],
   },
+  verification: {
+    google: 'hNhZo1qCLBoxai3vJISpFML4YEwuKG2JB--zguxDOBI',
+  },
   alternates: {
     canonical: 'https://paynelope.com',
   },
