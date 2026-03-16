@@ -447,7 +447,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
       <div className="flex flex-col lg:flex-row gap-6 items-start">
 
       {/* ============ COLONNE GAUCHE — Action ============ */}
-      <div className="w-full lg:w-[55%] space-y-5">
+      <div className="w-full lg:w-[55%] space-y-5 order-2 lg:order-1">
 
       {/* ========= ÉTAT VIDE INTELLIGENT ========= */}
       {!onboarding.hasImported && (
@@ -743,7 +743,7 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
       </div>{/* fin colonne gauche */}
 
       {/* ============ COLONNE DROITE — Info ============ */}
-      <div className="w-full lg:w-[45%] space-y-5 lg:sticky lg:top-6">
+      <div className="w-full lg:w-[45%] space-y-5 lg:sticky lg:top-6 order-1 lg:order-2">
 
         {/* Hero */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm card-hover">
