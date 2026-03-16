@@ -43,10 +43,10 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <img src="/logo.png" alt="Paynelope" style={{ height: 40, objectFit: 'contain' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <a href="#fonctionnalites" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>Fonctionnalités</a>
-            <a href="#tarifs" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>Tarifs</a>
+            <a href="#fonctionnalites" style={{ fontSize: 14, color: '#555', textDecoration: 'none', display: 'none' }} className="sm-show">Fonctionnalités</a>
+            <a href="#tarifs" style={{ fontSize: 14, color: '#555', textDecoration: 'none', display: 'none' }} className="sm-show">Tarifs</a>
             <Link href="/login" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>Connexion</Link>
-            <Link href="/signup" style={{ fontSize: 14, fontWeight: 700, color: '#fff', background: '#6366F1', padding: '8px 20px', borderRadius: 10, textDecoration: 'none' }}>
+            <Link href="/signup" style={{ fontSize: 14, fontWeight: 700, color: '#fff', background: '#6366F1', padding: '8px 20px', borderRadius: 10, textDecoration: 'none', whiteSpace: 'nowrap' }}>
               Essai gratuit →
             </Link>
           </div>
@@ -54,7 +54,7 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '100px 24px 80px', textAlign: 'center' }}>
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(48px, 8vw, 100px) 24px clamp(40px, 6vw, 80px)', textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 100, padding: '6px 16px', marginBottom: 32 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#6366F1', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             ✓ Sans engagement · Essai gratuit
@@ -67,7 +67,7 @@ export default function LandingPage() {
         <p style={{ fontSize: 20, color: '#555', maxWidth: 560, margin: '0 auto 48px', lineHeight: 1.6 }}>
           Paynelope est le CRM de recouvrement pensé pour les TPE. Relancez vos clients en 1 clic, suivez vos impayés, récupérez votre argent.
         </p>
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', flexDirection: 'column', alignItems: 'center', maxWidth: 400, margin: '0 auto' }}>
           <Link href="/signup" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#6366F1', padding: '16px 36px', borderRadius: 14, textDecoration: 'none', boxShadow: '0 4px 24px rgba(99,102,241,0.3)' }}>
             Commencer gratuitement →
           </Link>
@@ -80,7 +80,7 @@ export default function LandingPage() {
 
       {/* STAT BANNER */}
       <section style={{ background: '#6366F1', padding: '48px 24px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, textAlign: 'center' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 32, textAlign: 'center' }}>
           {[
             { value: '165 000 €', label: "d'impayés gérés dès le 1er mois client" },
             { value: '100 000 €', label: 'récupérés en 3 semaines (Groupe Servitel)' },

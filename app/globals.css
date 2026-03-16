@@ -144,3 +144,8 @@ button, a, select, input, textarea { transition: all 0.15s ease; }
 .gradient-indigo {
   background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
 }
+
+/* === Landing page responsive === */
+@media (min-width: 640px) {
+  .sm-show { display: block !important; }
+}
