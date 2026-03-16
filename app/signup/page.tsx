@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function SignupPage() {
+function SignupForm() {
   const [form, setForm] = useState({ nom_organisation: '', email: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -84,5 +84,13 @@ export default function SignupPage() {
       </p>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   )
 }
