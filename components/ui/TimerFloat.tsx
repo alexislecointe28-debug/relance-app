@@ -86,7 +86,7 @@ export default function TimerFloat() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="fixed bottom-24 sm:bottom-6 right-20 sm:right-28 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-24 sm:bottom-6 left-4 sm:left-6 z-50 flex flex-col items-end gap-2">
 
       {/* Panel */}
       {open && (
