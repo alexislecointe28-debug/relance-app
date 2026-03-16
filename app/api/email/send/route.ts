@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   const signature = org?.signature_email || org?.nom || 'Cordialement'
   const siret = org?.siret || ''
-  const fromEmail = org?.email_contact || 'onboarding@resend.dev'
+  const fromEmail = org?.email_contact || 'relance@paynelope.com'
   const fromName = org?.nom || 'Relance'
 
   const niveaux = {
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await resend.emails.send({
-      from: `${fromName} <onboarding@resend.dev>`,
+      from: `${fromName} <relance@paynelope.com>`,
       to: [email_destinataire],
       subject: template.subject,
       html: body_override ? body_override.replace(/\n/g, "<br/>") + "<br/><br/><pre style=\"font-family:Arial;color:#555;font-size:14px;\">" + (org?.signature_email || "") + "</pre>" : template.html + (notes ? `<hr/><p style="color:#888;font-size:12px;">Note interne : ${notes}</p>` : ''),
