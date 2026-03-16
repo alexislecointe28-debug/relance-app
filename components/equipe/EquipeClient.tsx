@@ -160,14 +160,14 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
       )}
 
       {/* Table membres */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[500px]">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Membre</th>
-              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Email</th>
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium hidden sm:table-cell">Email</th>
               <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Rôle</th>
-              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium">Depuis</th>
+              <th className="px-5 py-4 text-left text-xs text-gray-500 uppercase tracking-wider font-medium hidden sm:table-cell">Depuis</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -185,13 +185,13 @@ export default function EquipeClient({ membres: initial, orgNom, plan }: { membr
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-4 text-sm text-gray-600">{membre.email || '—'}</td>
+                <td className="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">{membre.email || '—'}</td>
                 <td className="px-5 py-4">
                   <span className={`badge ${membre.role === 'admin' ? 'text-purple-600 bg-purple-50 border-purple-200' : 'text-gray-600 bg-gray-100 border-gray-200'}`}>
                     {membre.role}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-sm text-gray-500">{formatDate(membre.created_at)}</td>
+                <td className="px-5 py-4 text-sm text-gray-500 hidden sm:table-cell">{formatDate(membre.created_at)}</td>
               </tr>
             ))}
           </tbody>

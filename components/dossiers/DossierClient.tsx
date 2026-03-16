@@ -135,14 +135,14 @@ export default function DossierClient({ dossier: initial, membres = [], isAdmin 
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-3 mb-6 sm:mb-8">
-        <button onClick={() => setModal('appel')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium">
-          <span>📞</span> Noter un appel
+      <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3 mb-6 sm:mb-8">
+        <button onClick={() => setModal('appel')} className="flex items-center justify-center gap-2 px-3 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium">
+          <span>📞</span> <span className="hidden xs:inline">Noter un</span> appel
         </button>
-        <button onClick={() => setModal('email')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium">
-          <span>✉️</span> Envoyer un mail
+        <button onClick={() => setModal('email')} className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium">
+          <span>✉️</span> <span className="hidden xs:inline">Envoyer un</span> mail
         </button>
-        <button onClick={() => setModal('paiement')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">
+        <button onClick={() => setModal('paiement')} className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">
           <span>💳</span> Demander le paiement
         </button>
       </div>
@@ -582,7 +582,7 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop bg-black/30 animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 modal-backdrop bg-black/30 animate-fade-in overflow-y-auto">
       <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-md p-6 animate-slide-up shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-semibold text-gray-900">{title}</h2>
