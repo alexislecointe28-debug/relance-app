@@ -1,14 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function SignupPage() {
   const [form, setForm] = useState({ nom_organisation: '', email: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref') || ''
 
   async function handleSubmit() {
     setError('')
@@ -19,7 +21,7 @@ export default function SignupPage() {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.email, password: form.password, nom_organisation: form.nom_organisation }),
+      body: JSON.stringify({ email: form.email, password: form.password, nom_organisation: form.nom_organisation, ref_code: refCode }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || "Erreur lors de l'inscription."); setLoading(false); return }

@@ -37,6 +37,38 @@ export async function POST(req: NextRequest) {
         plan,
         stripe_subscription_id: session.subscription as string,
       }).eq('id', orgId)
+
+      // Vérifier si parrainage en attente
+      const { data: parrainage } = await supabase
+        .from('parrainages')
+        .select('*, parrain:parrain_org_id(stripe_subscription_id, stripe_customer_id)')
+        .eq('filleul_org_id', orgId)
+        .eq('statut', 'en_attente')
+        .single()
+
+      if (parrainage && session.customer && session.subscription) {
+        // Appliquer au filleul via invoice item crédit
+        await stripe.invoiceItems.create({
+          customer: session.customer as string,
+          amount: -4900,
+          currency: 'eur',
+          description: 'Mois offert — Bienvenue sur Paynelope 🎁',
+        }).catch(() => {})
+
+        // Appliquer au parrain si abonnement actif
+        const parrainOrg = parrainage.parrain as any
+        if (parrainOrg?.stripe_customer_id) {
+          await stripe.invoiceItems.create({
+            customer: parrainOrg.stripe_customer_id,
+            amount: -4900,
+            currency: 'eur',
+            description: 'Mois offert — Tu as parrainé un ami 🎁',
+          }).catch(() => {})
+        }
+
+        // Marquer comme récompensé
+        await supabase.from('parrainages').update({ statut: 'recompense' }).eq('id', parrainage.id)
+      }
     }
   }
 
