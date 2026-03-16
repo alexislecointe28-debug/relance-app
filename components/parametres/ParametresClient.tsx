@@ -14,6 +14,7 @@ interface Membre {
 interface Org {
   id: string
   nom: string
+  stripe_account_id?: string | null
   email_templates?: {
     cordial?: string
     ferme?: string
@@ -178,6 +179,27 @@ Passé ce délai, nous engagerons sans préavis supplémentaire une procédure j
             {pwdSaved && <span className="text-sm text-emerald-600">Mot de passe modifié</span>}
           </div>
         </form>
+      </div>
+
+      {/* Stripe Connect */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <h2 className="font-semibold text-gray-900">Paiement en ligne</h2>
+        <p className="text-xs text-gray-400">Connecte ton compte Stripe pour envoyer des liens de paiement à tes clients. Les règlements vont directement sur ton compte.</p>
+        {org?.stripe_account_id ? (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5">
+              <span className="text-emerald-500 font-bold">✓</span>
+              <span className="text-sm font-medium text-emerald-700">Stripe connecté</span>
+              <span className="text-xs text-emerald-500 font-mono">{org.stripe_account_id.slice(0, 16)}...</span>
+            </div>
+            <a href="/api/stripe/connect" className="text-xs text-gray-400 hover:text-gray-600 underline">Reconnecter</a>
+          </div>
+        ) : (
+          <a href="/api/stripe/connect"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
+            💳 Connecter mon compte Stripe
+          </a>
+        )}
       </div>
 
       {/* Templates emails */}

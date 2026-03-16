@@ -15,7 +15,7 @@ export default async function DossierPage({ params }: { params: { id: string } }
   if (!dossier) notFound()
 
   const { data: currentMembre } = await supabase.from('membres').select('id, role').single()
-  const { data: org } = await supabase.from('organisations').select('plan').single()
+  const { data: org } = await supabase.from('organisations').select('plan, stripe_account_id').single()
   const { data: membres } = await supabase.from('membres').select('id, prenom, nom, email').order('prenom')
 
   const contact = Array.isArray(dossier.contact) ? dossier.contact[0] : dossier.contact
@@ -29,6 +29,7 @@ export default async function DossierPage({ params }: { params: { id: string } }
         membres={membres || []}
         isAdmin={currentMembre?.role === 'admin'}
         plan={org?.plan || 'demo'}
+        stripeConnected={!!org?.stripe_account_id}
       />
     </div>
   )

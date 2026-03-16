@@ -18,10 +18,11 @@ interface Props {
   membres?: { id: string; prenom?: string; nom?: string; email: string }[]
   isAdmin?: boolean
   plan?: string
+  stripeConnected?: boolean
 }
 
-type Modal = 'appel' | 'email' | 'contact' | null
-export default function DossierClient({ dossier: initial, membres = [], isAdmin = false, plan = 'demo' }: Props) {
+type Modal = 'appel' | 'email' | 'contact' | 'paiement' | null
+export default function DossierClient({ dossier: initial, membres = [], isAdmin = false, plan = 'demo', stripeConnected = false }: Props) {
   const [dossier, setDossier] = useState(initial)
   const [modal, setModal] = useState<Modal>(null)
   const [pendingStatut, setPendingStatut] = useState<StatutDossier | null>(null)
@@ -140,6 +141,9 @@ export default function DossierClient({ dossier: initial, membres = [], isAdmin 
         </button>
         <button onClick={() => setModal('email')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-medium">
           <span>✉️</span> Envoyer un mail
+        </button>
+        <button onClick={() => setModal('paiement')} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">
+          <span>💳</span> Demander le paiement
         </button>
       </div>
 
@@ -269,6 +273,17 @@ export default function DossierClient({ dossier: initial, membres = [], isAdmin 
       {modal === 'appel' && <ModalAppel dossierId={dossier.id} onClose={() => setModal(null)} onSaved={onActionAdded} />}
       {modal === 'email' && <ModalEmail dossierId={dossier.id} contactEmail={dossier.contact?.email || ''} montantTotal={dossier.montant_total} onClose={() => setModal(null)} onSaved={onActionAdded} />}
       {modal === 'contact' && <ModalContact dossierId={dossier.id} contact={dossier.contact} onClose={() => setModal(null)} onSaved={onContactSaved} />}
+      {modal === 'paiement' && (
+        <ModalPaiement
+          dossierId={dossier.id}
+          societe={dossier.societe}
+          factures={dossier.factures}
+          contactEmail={dossier.contact?.email || ''}
+          stripeConnected={stripeConnected}
+          onClose={() => setModal(null)}
+          onSaved={() => onActionAdded({} as Action)}
+        />
+      )}
     </main>
   )
 }
@@ -574,6 +589,153 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700">✕</button>
         </div>
         {children}
+      </div>
+    </div>
+  )
+}
+
+// ---- Modal Paiement ----
+function ModalPaiement({ dossierId, societe, factures, contactEmail, stripeConnected, onClose, onSaved }: {
+  dossierId: string
+  societe: string
+  factures: Facture[]
+  contactEmail: string
+  stripeConnected: boolean
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [selectedFactures, setSelectedFactures] = useState<string[]>([])
+  const [montantCustom, setMontantCustom] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [lien, setLien] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [sendEmail, setSendEmail] = useState(false)
+  const [emailDest, setEmailDest] = useState(contactEmail)
+
+  const montantSelectionne = factures
+    .filter(f => selectedFactures.includes(f.id) && f.statut !== 'payee')
+    .reduce((sum, f) => sum + f.montant_ttc, 0)
+
+  const montantFinal = montantCustom ? parseFloat(montantCustom) : montantSelectionne
+
+  function toggleFacture(id: string) {
+    setSelectedFactures(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    setMontantCustom('')
+  }
+
+  async function handleGenerate() {
+    if (!montantFinal || montantFinal <= 0) return
+    setLoading(true)
+    const res = await fetch('/api/stripe/payment-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dossier_id: dossierId,
+        facture_ids: selectedFactures,
+        montant_custom: montantCustom ? parseFloat(montantCustom) : null,
+        description: `Règlement — ${societe}`,
+        send_email: sendEmail,
+        email_destinataire: emailDest,
+      }),
+    })
+    const data = await res.json()
+    setLoading(false)
+    if (data.url) {
+      setLien(data.url)
+      onSaved()
+    }
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(lien)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const unpaidFactures = factures.filter(f => f.statut !== 'payee')
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-5 space-y-4 my-auto">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-gray-900">💳 Demander le paiement</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+        </div>
+
+        {!stripeConnected ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center space-y-2">
+            <p className="text-sm text-amber-700 font-medium">Compte Stripe non connecté</p>
+            <p className="text-xs text-amber-600">Connecte ton compte Stripe dans les paramètres pour envoyer des liens de paiement.</p>
+            <a href="/parametres" className="inline-block mt-2 px-4 py-2 bg-amber-600 text-white rounded-xl text-sm font-semibold hover:bg-amber-700">
+              Aller aux paramètres →
+            </a>
+          </div>
+        ) : lien ? (
+          <div className="space-y-3">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <p className="text-xs font-semibold text-emerald-700 mb-1">✓ Lien généré — {montantFinal.toFixed(2)} €</p>
+              <p className="text-xs text-emerald-600 font-mono break-all">{lien}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={handleCopy} className="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold">
+                {copied ? '✓ Copié !' : '📋 Copier'}
+              </button>
+              <a href={`mailto:${emailDest}?subject=Lien de paiement — ${societe}&body=Bonjour,%0A%0AVeuillez trouver ci-dessous votre lien de paiement sécurisé :%0A%0A${lien}%0A%0ACordialement`}
+                className="py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-semibold text-center">
+                ✉️ Envoyer par email
+              </a>
+            </div>
+            <button onClick={onClose} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600">Fermer</button>
+          </div>
+        ) : (
+          <>
+            {/* Sélection factures */}
+            {unpaidFactures.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Factures à régler</p>
+                {unpaidFactures.map(f => (
+                  <button key={f.id} onClick={() => toggleFacture(f.id)}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl border text-sm transition-all ${selectedFactures.includes(f.id) ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <span className="font-medium text-gray-700">{f.numero || 'Sans numéro'}</span>
+                    <span className="font-bold text-gray-900">{f.montant_ttc.toFixed(2)} €</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Montant calculé */}
+            {montantSelectionne > 0 && (
+              <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                <span className="text-sm text-gray-500">Montant sélectionné</span>
+                <span className="font-bold text-gray-900">{montantSelectionne.toFixed(2)} €</span>
+              </div>
+            )}
+
+            {/* Montant personnalisé */}
+            <div>
+              <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Montant personnalisé (optionnel)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={montantCustom}
+                  onChange={e => setMontantCustom(e.target.value)}
+                  placeholder="0.00"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+                <span className="text-sm text-gray-400 font-medium">€</span>
+              </div>
+            </div>
+
+            {/* Bouton générer */}
+            <button
+              onClick={handleGenerate}
+              disabled={loading || !montantFinal || montantFinal <= 0}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Génération...' : `Générer le lien — ${montantFinal > 0 ? montantFinal.toFixed(2) + ' €' : '?'}`}
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
