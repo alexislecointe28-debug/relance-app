@@ -66,10 +66,26 @@ export async function POST(req: NextRequest) {
   const fromEmail = org?.email_contact || 'relance@paynelope.com'
   const fromName = org?.nom || 'Relance'
 
+  // Templates custom si définis, sinon defaults
+  const customTemplates = org?.email_templates || {}
+
+  function buildHtml(body: string) {
+    return `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+      ${body.split('\n').map((l: string) => l ? `<p>${l}</p>` : '<br/>').join('')}
+      <pre style="font-family: Arial, sans-serif; color: #555; font-size: 14px;">${signature}</pre>
+    </div>`
+  }
+
   const niveaux = {
-    cordial: TEMPLATES.cordial(dossier.societe, dossier.montant_total, signature),
-    ferme: TEMPLATES.ferme(dossier.societe, dossier.montant_total, signature),
-    mise_en_demeure: TEMPLATES.mise_en_demeure(dossier.societe, dossier.montant_total, signature, siret),
+    cordial: customTemplates.cordial
+      ? { subject: `Règlement en attente — ${dossier.societe}`, html: buildHtml(customTemplates.cordial.replace(/{societe}/g, dossier.societe).replace(/{montant}/g, dossier.montant_total.toFixed(2))) }
+      : TEMPLATES.cordial(dossier.societe, dossier.montant_total, signature),
+    ferme: customTemplates.ferme
+      ? { subject: `Rappel important — ${dossier.societe}`, html: buildHtml(customTemplates.ferme.replace(/{societe}/g, dossier.societe).replace(/{montant}/g, dossier.montant_total.toFixed(2))) }
+      : TEMPLATES.ferme(dossier.societe, dossier.montant_total, signature),
+    mise_en_demeure: customTemplates.mise_en_demeure
+      ? { subject: `Dernier rappel avant procédure — ${dossier.societe}`, html: buildHtml(customTemplates.mise_en_demeure.replace(/{societe}/g, dossier.societe).replace(/{montant}/g, dossier.montant_total.toFixed(2))) }
+      : TEMPLATES.mise_en_demeure(dossier.societe, dossier.montant_total, signature, siret),
   }
 
   const template = niveaux[niveau as keyof typeof niveaux] || niveaux.cordial
