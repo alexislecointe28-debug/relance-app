@@ -124,6 +124,21 @@ export default function ParametresClient({ membre, org }: { membre: Membre, org:
           </div>
         </form>
       </div>
+
+      {/* Support & feedback */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <h2 className="font-semibold text-gray-900">Support & feedback</h2>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <a href="/feedback"
+            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors">
+            💡 Suggérer une amélioration
+          </a>
+          <a href="mailto:contact@paynelope.com"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+            ✉️ contact@paynelope.com
+          </a>
+        </div>
+      </div>
     </main>
   )
 }
