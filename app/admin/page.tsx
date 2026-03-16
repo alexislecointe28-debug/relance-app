@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import AdminOrgActions from '@/components/admin/AdminOrgActions'
 
 export default async function AdminPage() {
   const supabase = createServerSupabaseClient()
@@ -33,8 +34,14 @@ export default async function AdminPage() {
 
     const { data: membres } = await serviceSupabase
       .from('membres')
-      .select('email, role, created_at')
+      .select('email, role, created_at, user_id')
       .eq('organisation_id', org.id)
+
+    // Récupérer le statut banned via auth admin
+    const membresWithBan = await Promise.all((membres || []).map(async (m) => {
+      const { data: authUser } = await serviceSupabase.auth.admin.getUserById(m.user_id)
+      return { ...m, banned: !!authUser?.user?.banned_until }
+    }))
 
     const { data: lastAction } = await serviceSupabase
       .from('actions')
@@ -56,8 +63,8 @@ export default async function AdminPage() {
       nb_actifs: nbActifs,
       nb_resolus: nbResolus,
       total_montant: totalMontant,
-      nb_membres: membres?.length || 0,
-      membres: membres || [],
+      nb_membres: membresWithBan?.length || 0,
+      membres: membresWithBan || [],
       last_action: lastAction?.created_at || null,
     }
   }))
@@ -160,6 +167,7 @@ export default async function AdminPage() {
                     <div className="text-xs text-gray-300 mt-1">Inscrit {formatDate(org.created_at)}</div>
                   </div>
                 </div>
+                <AdminOrgActions orgId={org.id} orgNom={org.nom} membres={org.membres} />
               </div>
             )
           })}
