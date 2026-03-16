@@ -38,6 +38,7 @@ const PLANS = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null)
+  const [coupon, setCoupon] = useState('')
   const router = useRouter()
 
   async function handleCheckout(planId: string) {
@@ -46,7 +47,7 @@ export default function PricingPage() {
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: planId }),
+      body: JSON.stringify({ plan: planId, coupon }),
     })
     const data = await res.json()
     if (data.url) window.location.href = data.url
@@ -65,6 +66,23 @@ export default function PricingPage() {
           <img src="/logo.png" alt="Paynelope" className="h-12 w-auto mx-auto mb-6" style={{ objectFit: 'contain' }} />
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Simple. Transparent. Efficace.</h1>
           <p className="text-gray-400">Pas de frais cachés. Pas de mauvaises surprises. Juste ton argent qui rentre.</p>
+        </div>
+
+        {/* Code promo */}
+        <div className="max-w-sm mx-auto mb-8">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={coupon}
+              onChange={e => setCoupon(e.target.value.toUpperCase())}
+              placeholder="Code promo (optionnel)"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            />
+            {coupon && (
+              <button onClick={() => setCoupon('')} className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-400 hover:text-gray-600">✕</button>
+            )}
+          </div>
+          {coupon && <p className="text-xs text-indigo-600 mt-1.5 font-medium">✓ Code "{coupon}" appliqué au paiement</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

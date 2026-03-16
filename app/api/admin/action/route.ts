@@ -35,6 +35,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
+  if (action === 'change_plan') {
+    const { error } = await service
+      .from('organisations')
+      .update({ plan: blocked }) // plan passé dans le champ "blocked"
+      .eq('id', org_id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ ok: true })
+  }
+
   if (action === 'delete_org') {
     // Supprimer les données de l'org (cascade via FK normalement, mais on force)
     const { data: dossiers } = await service.from('dossiers').select('id').eq('organisation_id', org_id)

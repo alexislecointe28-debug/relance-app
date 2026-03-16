@@ -186,7 +186,7 @@ export default async function AdminPage() {
                     <div className="text-xs text-gray-300 mt-1">Inscrit {formatDate(org.created_at)}</div>
                   </div>
                 </div>
-                <AdminOrgActions orgId={org.id} orgNom={org.nom} membres={org.membres} connexions={org.connexions} />
+                <AdminOrgActions orgId={org.id} orgNom={org.nom} membres={org.membres} connexions={org.connexions} plan={org.plan || 'demo'} />
               </div>
             )
           })}

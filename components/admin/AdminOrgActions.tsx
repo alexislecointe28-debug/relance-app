@@ -20,14 +20,16 @@ interface Props {
   orgNom: string
   membres: Membre[]
   connexions: Connexion[]
+  plan: string
 }
 
-export default function AdminOrgActions({ orgId, orgNom, membres, connexions }: Props) {
+export default function AdminOrgActions({ orgId, orgNom, membres, connexions, plan }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [selectedUserId, setSelectedUserId] = useState('')
   const [showPwdForm, setShowPwdForm] = useState(false)
+  const [currentPlan, setCurrentPlan] = useState(plan)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   async function callAction(payload: object) {
@@ -51,6 +53,11 @@ export default function AdminOrgActions({ orgId, orgNom, membres, connexions }: 
   async function handleDelete() {
     if (!confirm(`Supprimer définitivement l'organisation "${orgNom}" et tous ses membres ?`)) return
     await callAction({ action: 'delete_org', org_id: orgId })
+  }
+
+  async function handleChangePlan(newPlan: string) {
+    await callAction({ action: 'change_plan', org_id: orgId, blocked: newPlan })
+    setCurrentPlan(newPlan)
   }
 
   async function handleBlock(user_id: string, blocked: boolean) {
@@ -80,6 +87,25 @@ export default function AdminOrgActions({ orgId, orgNom, membres, connexions }: 
               {msg.text}
             </div>
           )}
+
+          {/* Changer le plan */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium">Plan :</span>
+            {['demo', 'solo', 'agence'].map(p => (
+              <button
+                key={p}
+                onClick={() => handleChangePlan(p)}
+                disabled={loading !== null || currentPlan === p}
+                className={`text-xs px-3 py-1 rounded-lg font-semibold transition-colors ${
+                  currentPlan === p
+                    ? p === 'agence' ? 'bg-purple-600 text-white' : p === 'solo' ? 'bg-indigo-600 text-white' : 'bg-gray-600 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
 
           {/* Liste membres */}
           <div className="space-y-2">
