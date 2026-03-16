@@ -25,6 +25,14 @@ function SignupForm() {
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || "Erreur lors de l'inscription."); setLoading(false); return }
+
+    // Auto-login après inscription
+    const { createClient } = await import('@/lib/supabase')
+    const supabase = createClient()
+    await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+
+    // Logger la connexion en background
+    fetch('/api/auth/log-connexion', { method: 'POST' }).catch(() => {})
     router.push('/onboarding')
   }
 
