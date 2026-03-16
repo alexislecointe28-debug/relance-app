@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import TimerWrapper from '@/components/ui/TimerWrapper'
 import BottomNav from '@/components/ui/BottomNav'
+import UpdateBanner from '@/components/ui/UpdateBanner'
 import Script from 'next/script'
 
 const inter = Inter({ 
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ` }} />
       </head>
       <body className="bg-gray-50 text-gray-900 antialiased pb-24 sm:pb-0">
+        <UpdateBanner />
         {children}
         <TimerWrapper />
         <BottomNav />
