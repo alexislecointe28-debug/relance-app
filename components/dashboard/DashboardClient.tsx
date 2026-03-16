@@ -962,7 +962,7 @@ Passé ce délai, une procédure judiciaire sera engagée.`,
     const { data: membre } = await supabase.from('membres').select('id').single()
     await supabase.from('actions').insert({
       dossier_id: dossier.id, type: 'appel',
-      notes, membre_id: membre?.id, rappel_at: rappel || null
+      notes, membre_id: membre?.id, rappel_le: rappel || null
     })
     if (statut) {
       await supabase.from('dossiers').update({ statut }).eq('id', dossier.id)
