@@ -743,8 +743,10 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
       </div>{/* fin colonne gauche */}
 
       {/* ============ COLONNE DROITE — Info ============ */}
-      <div className="w-full lg:w-[45%] space-y-5 lg:sticky lg:top-6 order-1 lg:order-2">
+      <div className="w-full lg:w-[45%] lg:sticky lg:top-6 order-1 lg:order-2 lg:space-y-5 flex flex-col gap-5">
 
+        {/* Hero — order-1 sur mobile */}
+        <div className="order-1">
         {/* Hero */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm card-hover">
           <div className="text-sm text-gray-400 mb-1">Ton argent qui dort</div>
@@ -798,6 +800,10 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
             )}
           </div>
         </div>
+        </div>{/* fin hero order-1 */}
+
+        {/* Badges + Rappels + Feed — order-3 sur mobile */}
+        <div className="order-3 lg:order-none space-y-5">
 
         {/* Badges */}
         {scoreTotal > 0 && <BadgesList scoreTotal={scoreTotal} streak={streak} />}
@@ -839,17 +845,10 @@ export default function DashboardClient({ dossiers: initialDossiers, rappels, fe
 
         {/* Feed realtime */}
         {liveFeed.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
-              <div className="flex-1 h-px bg-gray-100" />
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Temps réel" />
-            </div>
-            <div className="space-y-1">
-              {liveFeed.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
-            </div>
-          </div>
+          <FeedCollapsible liveFeed={liveFeed} />
         )}
+
+        </div>{/* fin wrapper order-3 */}
 
       </div>{/* fin colonne droite */}
 
@@ -1432,5 +1431,31 @@ function EditPhoneInline({ contactId }: { contactId: string }) {
     >
       + Ajouter un téléphone
     </button>
+  )
+}
+
+// ---- Feed collapsible (3 lignes + voir plus) ----
+function FeedCollapsible({ liveFeed }: { liveFeed: FeedItem[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const visible = expanded ? liveFeed : liveFeed.slice(0, 3)
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dernières actions</span>
+        <div className="flex-1 h-px bg-gray-100" />
+        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Temps réel" />
+      </div>
+      <div className="space-y-1">
+        {visible.map((item: FeedItem) => <FeedRow key={item.id} item={item} />)}
+      </div>
+      {liveFeed.length > 3 && (
+        <button
+          onClick={() => setExpanded(p => !p)}
+          className="w-full mt-2 text-xs text-gray-400 hover:text-indigo-500 py-1 transition-colors"
+        >
+          {expanded ? '▲ Réduire' : `▼ Voir ${liveFeed.length - 3} de plus`}
+        </button>
+      )}
+    </div>
   )
 }
