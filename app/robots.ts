@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/dashboard', '/dossiers', '/admin', '/parametres', '/import', '/equipe', '/agenda', '/parrainage'],
       },
     ],
-    sitemap: 'https://paynelope.com/sitemap.xml',
+    sitemap: 'https://www.paynelope.com/sitemap.xml',
   }
 }

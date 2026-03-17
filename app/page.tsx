@@ -4,6 +4,9 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Paynelope — Recouvrez vos impayés facilement',
   description: 'Le CRM de relance pour les TPE. Relancez vos clients en 1 clic, suivez vos impayés, récupérez votre argent. Essai gratuit, sans CB.',
+  alternates: {
+    canonical: 'https://www.paynelope.com',
+  },
 }
 
 const FEATURES = [

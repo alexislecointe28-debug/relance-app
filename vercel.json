@@ -1,6 +1,10 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install"
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "paynelope.com" }],
+      "destination": "https://www.paynelope.com/$1",
+      "permanent": true
+    }
+  ]
 }

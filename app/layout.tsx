@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/icon-192.png' }],
   },
-  metadataBase: new URL('https://paynelope.com'),
+  metadataBase: new URL('https://www.paynelope.com'),
   title: {
     default: 'Paynelope — Recouvrez vos impayés facilement',
     template: '%s | Paynelope',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: 'https://paynelope.com',
+    url: 'https://www.paynelope.com',
     siteName: 'Paynelope',
     title: 'Paynelope — Recouvrez vos impayés facilement',
     description: 'Le CRM de recouvrement pour les TPE. Relancez vos clients, récupérez votre argent.',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     google: 'hNhZo1qCLBoxai3vJISpFML4YEwuKG2JB--zguxDOBI',
   },
   alternates: {
-    canonical: 'https://paynelope.com',
+    canonical: 'https://www.paynelope.com',
   },
 }
 
