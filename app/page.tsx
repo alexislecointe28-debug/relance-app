@@ -183,7 +183,8 @@ export default function LandingPage() {
           <img src="/logo.png" alt="Paynelope" style={{ height: 32, objectFit: 'contain' }} />
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <Link href="/pricing" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>Tarifs</Link>
-            <Link href="/legal" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>CGU & Mentions légales</Link>
+            <Link href="/legal" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>Mentions légales</Link>
+            <Link href="/confidentialite" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>Confidentialité</Link>
             <a href="mailto:contact@paynelope.com" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>contact@paynelope.com</a>
           </div>
           <div style={{ fontSize: 13, color: '#bbb' }}>© 2026 Paynelope</div>
