@@ -64,6 +64,17 @@ export default function LegalPage() {
           <p>Les présentes CGU sont soumises au droit français. Tout litige sera soumis à la compétence des tribunaux de Lyon.</p>
         </div>
 
+        <div id="cookies">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">10. Cookies et mesure d&apos;audience</h2>
+          <p>Paynelope utilise Google Analytics (GA4) pour mesurer l&apos;audience du site public (paynelope.com). Ce service dépose des cookies de mesure sur votre navigateur.</p>
+          <p className="mt-2"><strong>Cookies utilisés :</strong></p>
+          <ul className="mt-1 space-y-1 list-disc list-inside text-gray-600">
+            <li><code>_ga</code>, <code>_ga_*</code> — Google Analytics, durée 2 ans — mesure d&apos;audience anonymisée</li>
+          </ul>
+          <p className="mt-2">Ces cookies ne sont déposés qu&apos;avec votre consentement explicite. Vous pouvez retirer votre consentement à tout moment en vidant les données de votre navigateur ou en nous contactant à <a href="mailto:contact@paynelope.com" className="text-indigo-600 hover:underline">contact@paynelope.com</a>.</p>
+          <p className="mt-2">Les pages connectées de l&apos;application (dashboard, dossiers, etc.) ne déposent aucun cookie de tracking.</p>
+        </div>
+
       </section>
     </main>
   )

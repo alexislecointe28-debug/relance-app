@@ -4,6 +4,7 @@ import './globals.css'
 import TimerWrapper from '@/components/ui/TimerWrapper'
 import BottomNav from '@/components/ui/BottomNav'
 import UpdateBanner from '@/components/ui/UpdateBanner'
+import CookieBanner from '@/components/ui/CookieBanner'
 import Script from 'next/script'
 
 const inter = Inter({ 
@@ -88,18 +89,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-gray-50 text-gray-900 antialiased pb-24 sm:pb-0">
         <UpdateBanner />
+        <CookieBanner />
         {children}
         <TimerWrapper />
         <BottomNav />
 
         {/* Google Analytics */}
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+        {/* GA avec consentement CNIL par défaut refusé */}
+        <Script id="google-analytics-consent" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', { analytics_storage: 'denied' });
           gtag('js', new Date());
-          gtag('config', '${GA_ID}', { page_path: window.location.pathname });
+          gtag('config', '${GA_ID}');
+          var consent = typeof window !== 'undefined' && localStorage.getItem('cookie_consent');
+          if (consent === 'accepted') { gtag('consent', 'update', { analytics_storage: 'granted' }); }
         ` }} />
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
 
       </body>
     </html>
