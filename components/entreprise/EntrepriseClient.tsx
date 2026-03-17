@@ -87,7 +87,7 @@ export default function EntrepriseClient({ org }: { org: Org }) {
         <div>
           <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Nom de l&apos;entreprise</label>
           <input value={nom} onChange={e => setNom(e.target.value)}
-            placeholder="Atout Film"
+            placeholder="Mon Entreprise"
             className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
         </div>
 
@@ -124,7 +124,7 @@ export default function EntrepriseClient({ org }: { org: Org }) {
           <label className="block text-xs text-gray-500 mb-1 uppercase tracking-wider font-medium">Signature email</label>
           <p className="text-xs text-gray-400 mb-1.5">Ajoutée automatiquement en bas de chaque email de relance.</p>
           <textarea value={signature} onChange={e => setSignature(e.target.value)} rows={3}
-            placeholder={"Cordialement,\nAlexis Lecointe\nAtout Film · 04 XX XX XX XX"}
+            placeholder={"Cordialement,\nPrénom NOM\nMon Entreprise · 04 XX XX XX XX"}
             className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
         </div>
 

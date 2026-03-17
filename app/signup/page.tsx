@@ -56,7 +56,7 @@ function SignupForm() {
           <div>
             <label className="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Nom de votre entreprise</label>
             <input type="text" value={form.nom_organisation} onChange={e => setForm(p => ({ ...p, nom_organisation: e.target.value }))}
-              placeholder="Atout Film, Cabinet Martin..."
+              placeholder="Mon Entreprise, Dupont SA..."
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
           </div>
           <div>
