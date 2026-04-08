@@ -1287,12 +1287,14 @@ function FeedRow({ item }: { item: FeedItem }) {
   return (
     <Link href={`/dossiers/${item.dossier?.id}`} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
       <span className="text-base w-5 text-center shrink-0">{icons[item.type] || '•'}</span>
-      <div className="flex-1 min-w-0">
-        <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">{item.dossier?.societe || '—'}</span>
-        <span className="text-xs text-gray-400 ml-1.5">{labels[item.type]}</span>
-        {item.notes && (
-          <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '···').slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
-        )}
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <p className="text-xs truncate text-gray-500">
+          <span className="font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">{item.dossier?.societe || '—'}</span>
+          <span className="ml-1.5">{labels[item.type]}</span>
+          {item.notes && (
+            <span className="ml-1.5">· {item.notes.replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '···').slice(0, 50)}</span>
+          )}
+        </p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         {item.membre?.prenom && (
