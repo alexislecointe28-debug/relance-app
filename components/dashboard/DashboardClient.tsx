@@ -1291,7 +1291,7 @@ function FeedRow({ item }: { item: FeedItem }) {
         <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">{item.dossier?.societe || '—'}</span>
         <span className="text-xs text-gray-400 ml-1.5">{labels[item.type]}</span>
         {item.notes && (
-          <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
+          <span className="text-xs text-gray-400 ml-1.5 truncate">· {item.notes.replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '···').slice(0, 40)}{item.notes.length > 40 ? '…' : ''}</span>
         )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
